@@ -494,8 +494,7 @@ function fillBuildings(box, track) {
     var rows = 3 + (i % 3);
     for (var r = 0; r < rows * 2; r++) win += '<span class="win"></span>';
     b.innerHTML =
-      '<div class="b-tip"></div>' +
-      '<div class="b-antenna"></div>' +
+      '<div class="b-spire" aria-hidden="true"></div>' +
       '<div class="b-body"><div class="b-windows">' + win + "</div></div>" +
       '<div class="b-boom" aria-hidden="true"></div>';
     box.appendChild(b);
@@ -651,7 +650,7 @@ function fireLaser(card, building) {
   if (!building) return;
   var fieldEl = $("playfield");
   var field = fieldEl.getBoundingClientRect();
-  var tipEl = building.querySelector(".b-antenna") || building.querySelector(".b-body") || building;
+  var tipEl = building.querySelector(".b-spire") || building.querySelector(".b-body") || building;
   var tip = tipEl.getBoundingClientRect();
   var tgt = card.getBoundingClientRect();
   var layer = $("laser-layer");
