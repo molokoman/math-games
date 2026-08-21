@@ -1703,3 +1703,13 @@ button.fact-chip {
   width: 1.15em;
   height: 1.15em;
 }
+
+
+#screen-start #btn-start {
+  margin-top: auto;
+  margin-bottom: 0;
+}
+#screen-start #btn-facts {
+  margin-top: 16px;
+  margin-bottom: 136px;
+}
