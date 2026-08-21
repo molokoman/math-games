@@ -22,8 +22,7 @@ var ROUND_INFO = [
   { id: 1, name: "Addition", symbol: "+", range: "10", kind: "add10", fall: "slow" },
   { id: 2, name: "Addition", symbol: "+", range: "20", kind: "add20", fall: "norm" },
   { id: 3, name: "Subtraction", symbol: "−", range: "10", kind: "sub10", fall: "norm" },
-  { id: 4, name: "+ −", symbol: "+ −", range: "20", kind: "mix20", fall: "norm" },
-  { id: 5, name: "+ −", symbol: "⚡", range: "+ −", kind: "mix20", fall: "fast" }
+  { id: 4, name: "Mix", symbol: "+ −", range: "20", kind: "mix20", fall: "norm" }
 ];
 
 var NICE = ["⚡", "★", "✓"];
