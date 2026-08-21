@@ -289,13 +289,13 @@ function crashFn(kind) {
 
 function buildSounds() {
   if (htmlSounds.zap) return;
-  htmlSounds.zap = makeSound(0.5, function (t, i) {
-    var env = Math.pow(Math.max(0, 1 - t / 0.5), 0.65);
-    var attack = Math.min(1, t / 0.02);
-    var n = noise01(i, 3) * 0.5 + noise01(i, 9) * 0.35 + noise01(i, 21) * 0.2;
-    var rush = n * (0.45 + 0.55 * (1 - t / 0.5));
-    var crackle = (noise01(i, 15) > 0.72 ? noise01(i, 4) : 0) * 0.55 * env;
-    return (rush + crackle) * attack * env;
+  htmlSounds.zap = makeSound(0.2, function (t, i) {
+    var env = Math.exp(-t * 20) * Math.min(1, t / 0.006);
+    var a = noise01(i, 5);
+    var b = noise01(i + 2, 12);
+    var spark = a - b * 0.65;
+    var tick = (Math.floor(t * 110) % 2 === 0) ? 1 : 0.25;
+    return spark * env * tick * 0.95;
   });
   htmlSounds.blast = makeSound(0.72, crashFn("blast"));
   htmlSounds.hit = makeSound(0.72, crashFn("hit"));
