@@ -289,10 +289,13 @@ function crashFn(kind) {
 
 function buildSounds() {
   if (htmlSounds.zap) return;
-  htmlSounds.zap = makeSound(0.52, function (t) {
-    var env = Math.max(0, 1 - t / 0.52);
-    var f = 1500 - t * 2000;
-    return Math.sin(t * f * 6.283) * 0.7 * env + ((t * 90) % 2 - 1) * 0.22 * env;
+  htmlSounds.zap = makeSound(0.5, function (t, i) {
+    var env = Math.pow(Math.max(0, 1 - t / 0.5), 0.65);
+    var attack = Math.min(1, t / 0.02);
+    var n = noise01(i, 3) * 0.5 + noise01(i, 9) * 0.35 + noise01(i, 21) * 0.2;
+    var rush = n * (0.45 + 0.55 * (1 - t / 0.5));
+    var crackle = (noise01(i, 15) > 0.72 ? noise01(i, 4) : 0) * 0.55 * env;
+    return (rush + crackle) * attack * env;
   });
   htmlSounds.blast = makeSound(0.72, crashFn("blast"));
   htmlSounds.hit = makeSound(0.72, crashFn("hit"));
@@ -390,8 +393,6 @@ function playHit() {
 
 function playZap() {
   playHtml("zap");
-  tone(1100, 0.5, "sawtooth", 0.4);
-  tone(620, 0.5, "square", 0.22);
 }
 
 function playBlast() {
