@@ -1111,7 +1111,10 @@ function endRound() {
   showScreen("screen-end");
   setZipMood(standingCount() <= 0 ? "oops" : "yay");
   var earned = state.zaps;
-  $("end-zaps").textContent = "⚡ " + earned;
+  var n = $("end-zaps-n");
+  if (n) n.textContent = String(earned);
+  var wrap = $("end-zaps");
+  if (wrap) wrap.setAttribute("aria-label", earned + " zaps this wave");
   paintEndCity();
   paintEndFacts();
 }

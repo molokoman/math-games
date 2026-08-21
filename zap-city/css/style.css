@@ -1447,3 +1447,32 @@ button.fact-chip {
   line-height: 1.1;
   box-sizing: border-box;
 }
+
+
+.end-zaps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #ffe14a;
+  text-shadow: none;
+  font-size: clamp(2.2rem, 7vw, 3.2rem);
+  font-weight: 800;
+}
+.end-zaps .ico-zap {
+  width: 40px;
+  height: 40px;
+  display: block;
+  fill: #090014;
+  stroke: #ffe14a;
+  stroke-width: 2;
+  stroke-linejoin: miter;
+  stroke-linecap: square;
+}
+.end-zaps .ico-zap path {
+  fill: #090014;
+  stroke: #ffe14a;
+  stroke-width: 2;
+  stroke-linejoin: miter;
+  stroke-linecap: square;
+}
