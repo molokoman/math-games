@@ -305,6 +305,15 @@ function buildSounds() {
     var env = Math.max(0, 1 - t / 0.16);
     return Math.sin(t * (240 - t * 700) * 6.283) * 0.35 * env;
   });
+  htmlSounds.click = makeSound(0.045, function (t) {
+    var env = Math.exp(-t * 55);
+    var sq = Math.sin(t * 980 * 6.283) >= 0 ? 1 : -1;
+    return sq * env * 0.32;
+  });
+}
+
+function playClick() {
+  playHtml("click");
 }
 
 function playHtml(name) {
@@ -346,7 +355,7 @@ function unlockAudio() {
       if (ctx.state === "suspended") ctx.resume();
     }
   } catch (e) {}
-  ["zap", "blast", "hit", "wrong"].forEach(function (n) {
+  ["zap", "blast", "hit", "wrong", "click"].forEach(function (n) {
     var a = htmlSounds[n];
     if (!a) return;
     try {
@@ -1067,6 +1076,11 @@ function boot() {
   document.addEventListener("keydown", onKey);
   document.addEventListener("pointerdown", unlockAudio, true);
   document.addEventListener("touchstart", unlockAudio, true);
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest("button");
+    if (!btn || btn.disabled) return;
+    playClick();
+  }, true);
   try { localStorage.removeItem("zapcity-muted"); } catch (e) {}
   setMuted(false);
 
