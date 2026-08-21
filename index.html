@@ -7,11 +7,11 @@
   <meta name="theme-color" content="#0b1b4a" />
   <title>Star Quest</title>
   <link rel="icon" href="assets/star.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css?v=kids1" />
   <!--
     Star Quest — a local math game for ages ~7.
     Open this file by double-clicking it. No internet or install needed.
-    Tweak question counts and difficulty in js/game.js (look for TWEAK THESE).
+    Tweak question counts and difficulty in js/game.js?v=kids1 (look for TWEAK THESE).
   -->
 </head>
 <body>
@@ -23,14 +23,12 @@
 
   <!-- START -->
   <section id="screen-start" class="screen active" aria-label="Start screen">
-    <p class="eyebrow">A math adventure</p>
     <h1 class="title">
       <span class="title-star" aria-hidden="true">✦</span>
       Star Quest
       <span class="title-star" aria-hidden="true">✦</span>
     </h1>
-    <p class="tagline">Collect stars by solving math. You can do it!</p>
-
+    
     <div class="hero-wrap" aria-hidden="true">
       <div class="hero mood-wave" data-hero>
         <!-- friendly star buddy: simple SVG, not scary -->
@@ -59,19 +57,18 @@
       </div>
     </div>
 
-    <p id="speech-start" class="speech" role="status">Hi! I’m Pip. Tap Let’s Go — then tap the right number!</p>
+    <p id="speech-start" class="speech" role="status">▶</p>
 
-    <button id="btn-start" class="btn primary huge" type="button">Let’s Go!</button>
+    <button id="btn-start" class="btn primary huge" type="button">▶</button>
 
-    <p class="pick-label">Or pick a round</p>
     <div class="round-grid" id="round-picks"></div>
 
     <label class="toggle-row" for="toggle-timer">
       <input id="toggle-timer" type="checkbox" />
-      <span id="timer-label">Timer (off — no rush!)</span>
+      <span id="timer-label">⏱</span>
     </label>
 
-    <a href="zap-city/" class="btn ghost" id="link-zap-city">Play Zap City</a>
+    <a href="zap-city/" class="btn ghost" id="link-zap-city">⚡</a>
   </section>
 
   <!-- GAME -->
@@ -110,10 +107,10 @@
       </div>
     </div>
 
-    <p id="speech-game" class="speech" role="status">What is the answer?</p>
+    <p id="speech-game" class="speech" hidden role="status"></p>
 
     <div class="question-card">
-      <p class="q-label" id="q-label">Question 1 of 8</p>
+      <p class="q-label" id="q-label">1 / 8</p>
       <p class="question" id="question" aria-live="polite">3 + 4</p>
       <div class="timer" id="timer" hidden>
         <div class="timer-bar" id="timer-bar"></div>
@@ -125,7 +122,7 @@
 
   <!-- END -->
   <section id="screen-end" class="screen" aria-label="Round finished" hidden>
-    <h2 class="title small">You did it!</h2>
+    <h2 class="title small">★</h2>
     <div class="hero-wrap" aria-hidden="true">
       <div class="hero mood-yay" data-hero>
         <svg viewBox="0 0 200 220" class="hero-svg" role="img">
@@ -152,17 +149,17 @@
         </svg>
       </div>
     </div>
-    <p id="end-stars" class="end-stars">7 stars</p>
-    <p id="speech-end" class="speech" role="status">Wow! You collected so many stars!</p>
+    <p id="end-stars" class="end-stars">★ 7 / 8</p>
+    <p id="speech-end" class="speech" hidden role="status"></p>
     <div class="end-actions">
-      <button id="btn-again" class="btn primary huge" type="button">Play again</button>
-      <button id="btn-next" class="btn secondary huge" type="button">Next round</button>
-      <button id="btn-picks" class="btn ghost" type="button">Pick a round</button>
+      <button id="btn-again" class="btn primary huge" type="button">↻</button>
+      <button id="btn-next" class="btn secondary huge" type="button">▶</button>
+      <button id="btn-picks" class="btn ghost" type="button">+ −</button>
     </div>
   </section>
 
   <div id="confetti" aria-hidden="true"></div>
 
-  <script src="js/game.js"></script>
+  <script src="js/game.js?v=kids1"></script>
 </body>
 </html>

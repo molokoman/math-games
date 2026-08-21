@@ -865,3 +865,57 @@ button, input, a { font: inherit; color: inherit; }
 }
 .fact-empty { color: var(--cream-soft); font-size: 0.95rem; }
 #btn-facts { margin-top: 10px; }
+
+/* kid-first: big symbols, tiny words */
+.pic-how {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  max-width: none;
+  font-size: 1.35rem;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+.pic-fall {
+  background: #ffe14a;
+  color: #111;
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+.pic-arrow { color: #ffe14a; font-size: 1.6rem; }
+.pic-pad {
+  background: #2ef5ff;
+  color: #041018;
+  padding: 6px 14px;
+  border-radius: 8px;
+}
+.round-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 2px;
+  padding: 10px 6px;
+}
+.round-sym {
+  display: block;
+  font-size: 2.15rem;
+  font-weight: 900;
+  line-height: 1;
+  color: #ffe14a;
+  text-shadow: 0 0 12px rgba(255, 225, 74, 0.55);
+}
+.round-word {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+.round-num {
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+.btn.huge { letter-spacing: 0; font-size: 2rem; }
+#speech-game[hidden] { display: none; }

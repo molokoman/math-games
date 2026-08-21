@@ -460,3 +460,26 @@ button, input { font: inherit; color: inherit; }
     transition-duration: 0.01ms !important;
   }
 }
+
+.round-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+.round-sym {
+  display: block;
+  font-size: 2.2rem;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--gold);
+}
+.round-word {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+.round-num { font-size: 1.15rem; font-weight: 800; }
+.btn.huge { letter-spacing: 0; font-size: 2rem; }

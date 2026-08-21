@@ -13,7 +13,7 @@ var STARTING_HEARTS = 3;
 var FALL_MS = 3000;         // default fall
 var SLOW_FALL_MS = 3600;    // round 1
 var SPEED_FALL_MS = 2000;   // speed wave
-var LASER_TRAVEL_MS = 220;  // snap-fast beam
+var LASER_TRAVEL_MS = 520;  // long zap, then blast
 var POP_MS = 340;           // problem burst after the beam arrives
 var WRONG_CLEAR_MS = 300;   // shake, then clear typed digits
 var HIT_PAUSE_MS = 1050;    // kind pause after a rooftop boom
@@ -21,20 +21,15 @@ var NEXT_PAUSE_MS = 420;    // breath after a zap before the next fall
 // =================================
 
 var ROUND_INFO = [
-  { id: 1, name: "Plus to 10",  blurb: "Add up to 10",         kind: "add10", fall: "slow" },
-  { id: 2, name: "Plus to 20",  blurb: "Add up to 20",         kind: "add20", fall: "norm" },
-  { id: 3, name: "Take Away",   blurb: "Subtract from 10",     kind: "sub10", fall: "norm" },
-  { id: 4, name: "Mix It Up",   blurb: "Plus and minus to 20", kind: "mix20", fall: "norm" },
-  { id: 5, name: "Speed Round", blurb: "A little faster",      kind: "mix20", fall: "fast" }
+  { id: 1, name: "Addition", symbol: "+", range: "10", kind: "add10", fall: "slow" },
+  { id: 2, name: "Addition", symbol: "+", range: "20", kind: "add20", fall: "norm" },
+  { id: 3, name: "Subtraction", symbol: "−", range: "10", kind: "sub10", fall: "norm" },
+  { id: 4, name: "+ −", symbol: "+ −", range: "20", kind: "mix20", fall: "norm" },
+  { id: 5, name: "+ −", symbol: "⚡", range: "+ −", kind: "mix20", fall: "fast" }
 ];
 
-var NICE = ["Zap!", "Nice shot!", "Zip zapped it!", "Yes!", "Got it!", "Super zap!"];
-var HIT = [
-  "Whoops — rooftop bonk. The city is okay!",
-  "Easy, Zip. We’ve still got this.",
-  "A little bump. Keep zapping!",
-  "The city shook, but you’re still the hero."
-];
+var NICE = ["⚡", "★", "✓"];
+var HIT = ["💥"];
 
 var state = {
   roundIndex: 0,
@@ -304,7 +299,6 @@ function playWrong() {
 }
 
 function playHit() {
-  // rumble first so a noise failure cannot mute the boom
   try { beep(90, 0.18, "square", 0, 0.34); } catch (e) {}
   try { beep(48, 0.4, "sine", 0, 0.32); } catch (e) {}
   try { sweep(180, 40, 0.28, "sawtooth", 0, 0.3); } catch (e) {}
@@ -313,10 +307,20 @@ function playHit() {
 }
 
 function playZap() {
-  try { sweep(1600, 180, 0.16, "sawtooth", 0, 0.38); } catch (e) {}
-  try { sweep(2400, 400, 0.12, "square", 0, 0.22); } catch (e) {}
-  try { beep(880, 0.1, "square", 0, 0.3); } catch (e) {}
-  try { noiseBurst(0.08, 0, 0.28, "highpass", 1800); } catch (e) {}
+  var dur = Math.max(0.35, LASER_TRAVEL_MS / 1000);
+  try { sweep(1400, 380, dur, "sawtooth", 0, 0.48); } catch (e) {}
+  try { sweep(2200, 620, dur, "square", 0, 0.32); } catch (e) {}
+  try { beep(980, dur, "sawtooth", 0, 0.26); } catch (e) {}
+  try { noiseBurst(dur, 0, 0.4, "bandpass", 2200); } catch (e) {}
+  try { noiseBurst(dur * 0.85, 0.03, 0.22, "highpass", 1400); } catch (e) {}
+}
+
+function playBlast() {
+  try { noiseBurst(0.26, 0, 0.55, "lowpass", 800); } catch (e) {}
+  try { noiseBurst(0.12, 0, 0.4, "highpass", 1800); } catch (e) {}
+  try { sweep(380, 48, 0.32, "sawtooth", 0, 0.42); } catch (e) {}
+  try { beep(62, 0.34, "sine", 0, 0.4); } catch (e) {}
+  try { beep(160, 0.1, "square", 0, 0.24); } catch (e) {}
 }
 
 function flashField() {
@@ -349,7 +353,15 @@ function showScreen(id) {
 
 function say(which, text) {
   var el = $("speech-" + which);
-  if (el) el.textContent = text;
+  if (!el) return;
+  if (el.classList.contains("pic-how")) return;
+  if (!text) {
+    el.textContent = "";
+    el.setAttribute("hidden", "");
+    return;
+  }
+  el.textContent = text;
+  el.removeAttribute("hidden");
 }
 
 function setZipMood(mood) {
@@ -359,6 +371,10 @@ function setZipMood(mood) {
   });
 }
 
+function chipLabel(r) {
+  return (r.symbol || "") + (r.range ? " " + r.range : "");
+}
+
 function buildRoundPicks(intoId, onPick) {
   var box = $(intoId);
   box.innerHTML = "";
@@ -366,7 +382,10 @@ function buildRoundPicks(intoId, onPick) {
     var b = document.createElement("button");
     b.type = "button";
     b.className = "round-card";
-    b.innerHTML = "<strong>Round " + r.id + "</strong><span>" + r.name + "</span>";
+    b.setAttribute("aria-label", r.name + (r.range ? " " + r.range : ""));
+    b.innerHTML = '<span class="round-sym">' + r.symbol + '</span>' +
+      '<span class="round-word">' + r.name + '</span>' +
+      '<span class="round-num">' + (r.range || "") + '</span>';
     b.addEventListener("click", function () { onPick(i); });
     box.appendChild(b);
   });
@@ -500,7 +519,7 @@ function renderProgress() {
 
 function renderHud() {
   var info = ROUND_INFO[state.roundIndex];
-  $("round-chip").textContent = "R" + info.id + " · " + info.name;
+  $("round-chip").textContent = chipLabel(info);
   renderHearts();
   renderProgress();
 }
@@ -621,12 +640,7 @@ function spawnProblem() {
   }
 
   setZipMood("think");
-  var info = ROUND_INFO[state.roundIndex];
-  if (state.qIndex === 0) {
-    say("game", info.fall === "fast" ? "A little faster — you’ve got this!" : "Type the answer to zap them!");
-  } else {
-    say("game", pick(["Type the answer!", "Zap it!", "You’ve got this!"]));
-  }
+  say("game", "");
 }
 
 function startRound(index) {
@@ -678,7 +692,7 @@ function zapCorrect() {
   flashField();
   burstConfetti();
   setZipMood("yay");
-  say("game", pick(NICE));
+  say("game", "");
   renderHud();
 
   var card = state.card;
@@ -691,10 +705,12 @@ function zapCorrect() {
     var shooter = closestBuilding(cardR.left + cardR.width / 2);
     fireLaser(card, shooter);
     window.setTimeout(function () {
+      playBlast();
       if (state.card === card) card.classList.add("pop");
       clearLaser();
     }, travel);
   } else if (card) {
+    playBlast();
     card.classList.add("pop");
   }
 
@@ -759,7 +775,7 @@ function onCityHit() {
     state.card.classList.add("shake");
   }
   renderHud();
-  say("game", pick(HIT));
+  say("game", "");
   window.setTimeout(advance, HIT_PAUSE_MS);
 }
 
@@ -780,16 +796,8 @@ function endRound() {
   setZipMood("yay");
   var total = QUESTIONS_PER_ROUND;
   var earned = state.zaps;
-  $("end-zaps").textContent = earned + " zap" + (earned === 1 ? "" : "s") + " out of " + total;
-  var msg;
-  if (earned === total) msg = "Perfect night! Zip is so proud!";
-  else if (earned >= total - 2) msg = "Wow! You zapped so many!";
-  else if (earned >= 3) msg = "The city is safe. Great defending!";
-  else msg = "You showed up for the city. Try this round again!";
-  if (state.hearts <= 0 && earned < total) {
-    msg = "The city is resting. You still scored " + earned + " zap" + (earned === 1 ? "" : "s") + "!";
-  }
-  say("end", msg);
+  $("end-zaps").textContent = "⚡ " + earned + " / " + total;
+  say("end", "");
   $("btn-next").hidden = state.roundIndex >= ROUND_INFO.length - 1;
   paintEndFacts();
 }
@@ -816,10 +824,10 @@ function paintEndFacts() {
   if (banner) {
     if (stats.ready && nxt) {
       banner.hidden = false;
-      banner.textContent = "Mastered " + stats.mastered + " facts. Ready for " + nxt.name + "!";
+      banner.textContent = "★ × " + stats.mastered + "  →  " + chipLabel(nxt);
     } else if (stats.mastered) {
       banner.hidden = false;
-      banner.textContent = stats.mastered + " gold-star fact" + (stats.mastered === 1 ? "" : "s") + " in " + info.name + ".";
+      banner.textContent = "★ × " + stats.mastered;
     } else {
       banner.hidden = true;
     }
@@ -838,7 +846,7 @@ function paintFactBook() {
     wrap.className = "fact-band";
     var h = document.createElement("h3");
     var stats = bandStats(info.kind);
-    h.textContent = info.name + "  ·  " + stats.mastered + " mastered";
+    h.textContent = chipLabel(info) + "   ★ × " + stats.mastered;
     wrap.appendChild(h);
     var row = document.createElement("div");
     row.className = "fact-row";
@@ -847,7 +855,7 @@ function paintFactBook() {
     if (!keys.length) {
       var empty = document.createElement("p");
       empty.className = "fact-empty";
-      empty.textContent = "Play this wave to collect facts.";
+      empty.textContent = "▶";
       wrap.appendChild(empty);
     } else {
       keys.sort().forEach(function (k) { row.appendChild(factChip(k, factStatus(map[k]))); });
@@ -855,14 +863,14 @@ function paintFactBook() {
     }
     if (stats.ready) {
       var next = ROUND_INFO[i + 1];
-      readyBits.push(info.name + (next ? (" → " + next.name) : " is solid"));
+      readyBits.push(chipLabel(info) + (next ? (" → " + chipLabel(next)) : " ★"));
     }
     bands.appendChild(wrap);
   });
   if (banner) {
     if (readyBits.length) {
       banner.hidden = false;
-      banner.textContent = "Ready to move on: " + readyBits.join(". ") + ".";
+      banner.textContent = readyBits.join("   ");
     } else {
       banner.hidden = true;
     }
@@ -959,14 +967,14 @@ function boot() {
     stopFalling();
     showScreen("screen-start");
     setZipMood("wave");
-    say("start", "Choose a wave — or defend the city.");
+    say("start", "");
   });
   $("btn-mute").addEventListener("click", function () { setMuted(!state.muted); });
   if ($("btn-facts")) $("btn-facts").addEventListener("click", openFacts);
   if ($("btn-facts-end")) $("btn-facts-end").addEventListener("click", openFacts);
   if ($("btn-facts-back")) $("btn-facts-back").addEventListener("click", function () {
     showScreen("screen-start");
-    say("start", "Choose a wave — or defend the city.");
+    say("start", "");
   });
   document.addEventListener("keydown", onKey);
   document.addEventListener("pointerdown", function () { ensureAudio(); }, { once: true });

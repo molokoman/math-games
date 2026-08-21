@@ -7,12 +7,7 @@
   <meta name="theme-color" content="#090014" />
   <title>Zap City</title>
   <link rel="icon" href="assets/zip.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="css/zap.css?v=facts3" />
-  <!--
-    Zap City — a local math game for ages ~7.
-    Open this file by double-clicking it. No internet or install needed.
-    Tweak fall times and difficulty in js/game.js (look for TWEAK THESE).
-  -->
+  <link rel="stylesheet" href="css/zap.css?v=kids1" />
 </head>
 <body>
   <div id="sky" aria-hidden="true"></div>
@@ -21,40 +16,32 @@
     <span class="icon-sound" data-on="🔊" data-off="🔇">🔊</span>
   </button>
 
-  <!-- START -->
-  <section id="screen-start" class="screen active" aria-label="Start screen">
-    <p class="eyebrow">Night defense</p>
+  <section id="screen-start" class="screen active" aria-label="Start">
     <h1 class="title">ZAP<em>CITY</em></h1>
-    <p class="tagline">Numbers rain on the skyline. Tap the answer. The nearest tower fires.</p>
-
     <div class="intro-city" aria-hidden="true">
       <div class="buildings" id="intro-buildings"></div>
       <div class="ground"></div>
     </div>
-
-    <p id="speech-start" class="how" role="status">Tap the answer before a number hits a building.</p>
-
-    <button id="btn-start" class="btn primary huge" type="button">Defend the city</button>
-
-    <p class="pick-label">Choose a wave</p>
+    <p id="speech-start" class="how pic-how" role="status" aria-label="Tap the answer">
+      <span class="pic-fall">3 + 4</span>
+      <span class="pic-arrow">↓</span>
+      <span class="pic-pad">7</span>
+    </p>
+    <button id="btn-start" class="btn primary huge" type="button" aria-label="Play">▶</button>
     <div class="round-grid" id="round-picks"></div>
-
-    <button id="btn-facts" class="btn ghost" type="button">My facts</button>
-    <a href="../" class="text-link" id="link-star-quest">Star Quest</a>
+    <button id="btn-facts" class="btn ghost" type="button" aria-label="My facts">★</button>
+    <a href="../" class="text-link" id="link-star-quest" aria-label="Star Quest">✦</a>
   </section>
 
-  <!-- GAME -->
   <section id="screen-game" class="screen" aria-label="Game" hidden>
     <header class="hud">
-      <div class="hearts" id="hearts" aria-live="polite" aria-label="City hearts left"></div>
-      <div class="progress" id="progress" aria-label="Zap progress"></div>
-      <div class="round-chip" id="round-chip">Round 1</div>
+      <div class="hearts" id="hearts" aria-live="polite" aria-label="Hearts left"></div>
+      <div class="progress" id="progress" aria-label="Progress"></div>
+      <div class="round-chip" id="round-chip">+ 10</div>
     </header>
-
-    <p id="speech-game" class="speech compact" role="status">Type the answer!</p>
+    <p id="speech-game" class="speech compact" role="status" hidden></p>
     <p id="sky-problem" class="sky-problem" aria-live="polite">3 + 4</p>
-
-    <div id="playfield" class="playfield" aria-label="Night sky. A math problem is falling.">
+    <div id="playfield" class="playfield" aria-label="Night sky">
       <div class="moon" aria-hidden="true"></div>
       <svg id="laser-layer" class="laser-layer" aria-hidden="true">
         <line id="laser-beam" class="laser-beam" x1="0" y1="0" x2="0" y2="0" />
@@ -65,47 +52,40 @@
         <div class="buildings" id="buildings"></div>
       </div>
     </div>
-
     <div class="dock">
       <div id="typed" class="typed" aria-live="polite" aria-label="Your answer">?</div>
       <div id="pad" class="pad" role="group" aria-label="Number pad"></div>
     </div>
   </section>
 
-  <!-- END -->
-  <section id="screen-end" class="screen" aria-label="Round finished" hidden>
-    <p class="eyebrow">Wave clear</p>
-    <h2 class="title small">Skyline safe</h2>
+  <section id="screen-end" class="screen" aria-label="Done" hidden>
+    <h2 class="title small" aria-hidden="true">⚡</h2>
     <div class="intro-city mini" aria-hidden="true">
       <div class="buildings" id="end-buildings"></div>
       <div class="ground"></div>
     </div>
-    <p id="end-zaps" class="end-zaps">7 zaps</p>
-    <p id="speech-end" class="how" role="status">Wow! You zapped so many!</p>
+    <p id="end-zaps" class="end-zaps">⚡ 7 / 8</p>
+    <p id="speech-end" class="how" role="status" hidden></p>
     <div class="end-actions">
-      <button id="btn-again" class="btn primary huge" type="button">Play again</button>
-      <button id="btn-next" class="btn secondary huge" type="button">Next wave</button>
+      <button id="btn-again" class="btn primary huge" type="button" aria-label="Play again">↻</button>
+      <button id="btn-next" class="btn secondary huge" type="button" aria-label="Next">▶</button>
       <p id="end-ready" class="ready-banner" hidden></p>
-      <div id="end-facts" class="fact-row" aria-label="Facts from this wave"></div>
-      <button id="btn-facts-end" class="btn ghost" type="button">My facts</button>
-      <button id="btn-picks" class="btn ghost" type="button">Choose a wave</button>
-      <a href="../" class="text-link" id="link-star-quest-end">Star Quest</a>
+      <div id="end-facts" class="fact-row" aria-label="Facts"></div>
+      <button id="btn-facts-end" class="btn ghost" type="button" aria-label="My facts">★</button>
+      <button id="btn-picks" class="btn ghost" type="button" aria-label="Pick a wave">+ −</button>
+      <a href="../" class="text-link" id="link-star-quest-end" aria-label="Star Quest">✦</a>
     </div>
   </section>
 
-
-  <!-- FACTS -->
-  <section id="screen-facts" class="screen" aria-label="Fact book" hidden>
-    <p class="eyebrow">Fact book</p>
-    <h2 class="title small">Your facts</h2>
-    <p id="facts-blurb" class="how">3 in a row = gold star. It stays until two misses in a row. Gold stars still pop up now and then as a check-up.</p>
+  <section id="screen-facts" class="screen" aria-label="Facts" hidden>
+    <h2 class="title small">★</h2>
+    <p id="facts-blurb" class="how pic-how" aria-label="Three stars means mastered">★★★ → ★ &nbsp; ✗✗ → !</p>
     <p id="facts-ready" class="ready-banner" hidden></p>
     <div id="facts-bands" class="facts-bands"></div>
-    <button id="btn-facts-back" class="btn primary huge" type="button">Back</button>
+    <button id="btn-facts-back" class="btn primary huge" type="button" aria-label="Back">←</button>
   </section>
 
   <div id="confetti" aria-hidden="true"></div>
-
-  <script src="js/zap.js?v=facts3"></script>
+  <script src="js/zap.js?v=kids1"></script>
 </body>
 </html>

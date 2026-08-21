@@ -18,16 +18,16 @@ var TIMER_DEFAULT_ON = false;
 // =================================
 
 var ROUND_INFO = [
-  { id: 1, name: "Plus to 10",   blurb: "Add up to 10",          kind: "add10" },
-  { id: 2, name: "Plus to 20",   blurb: "Add up to 20",          kind: "add20" },
-  { id: 3, name: "Take Away",    blurb: "Subtract from 10",      kind: "sub10" },
-  { id: 4, name: "Mix It Up",    blurb: "Plus and minus to 20",  kind: "mix20" },
-  { id: 5, name: "Fill the Blank", blurb: "3 + ? = 8",           kind: "missing10" }
+  { id: 1, name: "Addition", symbol: "+", range: "10", kind: "add10" },
+  { id: 2, name: "Addition", symbol: "+", range: "20", kind: "add20" },
+  { id: 3, name: "Subtraction", symbol: "−", range: "10", kind: "sub10" },
+  { id: 4, name: "+ −", symbol: "+ −", range: "20", kind: "mix20" },
+  { id: 5, name: "□", symbol: "□", range: "10", kind: "missing10" }
 ];
 
-var NICE = ["Nice!", "You got it!", "Super star!", "Yes!", "Wow!", "Great job!"];
-var TRY_AGAIN = ["Try that one again.", "So close — one more try!", "Almost! Pick another."];
-var REVEAL = ["The answer is {n}. You’ve got this!", "It’s {n}. On to the next star!", "Nice try — {n} was the one."];
+var NICE = ["★", "✦", "✓"];
+var TRY_AGAIN = ["?"];
+var REVEAL = ["= {n}"];
 
 var state = {
   roundIndex: 0,
@@ -195,7 +195,14 @@ function showScreen(id) {
 
 function say(which, text) {
   var el = $("speech-" + which);
-  if (el) el.textContent = text;
+  if (!el) return;
+  if (!text) {
+    el.textContent = "";
+    el.setAttribute("hidden", "");
+    return;
+  }
+  el.textContent = text;
+  el.removeAttribute("hidden");
 }
 
 function setHeroMood(mood) {
@@ -206,6 +213,10 @@ function setHeroMood(mood) {
 }
 
 // ---------- start screen ----------
+function chipLabel(r) {
+  return (r.symbol || "") + (r.range ? " " + r.range : "");
+}
+
 function buildRoundPicks(intoId, onPick) {
   var box = $(intoId);
   box.innerHTML = "";
@@ -213,7 +224,10 @@ function buildRoundPicks(intoId, onPick) {
     var b = document.createElement("button");
     b.type = "button";
     b.className = "round-card";
-    b.innerHTML = "<strong>Round " + r.id + "</strong><span>" + r.name + "</span>";
+    b.setAttribute("aria-label", r.name + (r.range ? " " + r.range : ""));
+    b.innerHTML = '<span class="round-sym">' + r.symbol + '</span>' +
+      '<span class="round-word">' + r.name + '</span>' +
+      '<span class="round-num">' + (r.range || "") + '</span>';
     b.addEventListener("click", function () { onPick(i); });
     box.appendChild(b);
   });
@@ -272,8 +286,8 @@ function renderPath() {
 function renderQuestion() {
   var q = state.current;
   var info = ROUND_INFO[state.roundIndex];
-  $("q-label").textContent = "Question " + (state.qIndex + 1) + " of " + QUESTIONS_PER_ROUND;
-  $("round-chip").textContent = "Round " + info.id + " · " + info.name;
+  $("q-label").textContent = (state.qIndex + 1) + " / " + QUESTIONS_PER_ROUND;
+  $("round-chip").textContent = chipLabel(info);
   $("question").innerHTML = q.html || q.prompt;
   var box = $("answers");
   box.innerHTML = "";
@@ -303,7 +317,7 @@ function startRound(index) {
   state.current = nextQuestion(ROUND_INFO[index].kind);
   showScreen("screen-game");
   setHeroMood("think");
-  say("game", "What is the answer?");
+  say("game", "");
   renderQuestion();
 }
 
@@ -385,7 +399,7 @@ function onAnswer(value, btn, timedOut) {
     state.firstTry = false;
     if (state.hearts > 0) state.hearts -= 1;
     renderHearts();
-    say("game", timedOut ? "Time’s up — try once more!" : pick(TRY_AGAIN));
+    say("game", timedOut ? "⏱" : pick(TRY_AGAIN));
     if (state.hearts === 0) {
       // last heart gone: still allow the retry on this question, then we finish
     }
@@ -424,7 +438,7 @@ function advance() {
   state.locked = false;
   state.current = nextQuestion(ROUND_INFO[state.roundIndex].kind);
   setHeroMood("think");
-  say("game", "What is the answer?");
+  say("game", "");
   renderQuestion();
 }
 
@@ -434,16 +448,8 @@ function endRound() {
   setHeroMood("yay");
   var total = QUESTIONS_PER_ROUND;
   var earned = state.stars;
-  $("end-stars").textContent = earned + " star" + (earned === 1 ? "" : "s") + " out of " + total;
-  var msg;
-  if (earned === total) msg = "Perfect path! Every star is yours!";
-  else if (earned >= total - 2) msg = "Wow! You collected so many stars!";
-  else if (earned >= 3) msg = "Great walking. Those stars are yours!";
-  else msg = "You showed up and that’s a star move. Try this round again!";
-  if (state.hearts <= 0 && earned < total) {
-    msg = "Hearts are resting. You still earned " + earned + " star" + (earned === 1 ? "" : "s") + "!";
-  }
-  say("end", msg);
+  $("end-stars").textContent = "★ " + earned + " / " + total;
+  say("end", "");
   var last = state.roundIndex >= ROUND_INFO.length - 1;
   $("btn-next").hidden = last;
   $("btn-next").textContent = last ? "Next round" : "Next round";
@@ -467,9 +473,7 @@ function onKey(e) {
 
 function paintTimerLabel() {
   var on = $("toggle-timer").checked;
-  $("timer-label").textContent = on
-    ? "Timer (on — " + TIMER_SECONDS + " seconds)"
-    : "Timer (off — no rush!)";
+  $("timer-label").textContent = on ? "⏱" : "⏱";
 }
 
 // ---------- boot ----------
@@ -484,7 +488,7 @@ function boot() {
   $("btn-picks").addEventListener("click", function () {
     showScreen("screen-start");
     setHeroMood("wave");
-    say("start", "Pick a round — or tap Let’s Go!");
+    say("start", "▶");
   });
   $("btn-mute").addEventListener("click", function () { setMuted(!state.muted); });
   $("toggle-timer").checked = TIMER_DEFAULT_ON;
