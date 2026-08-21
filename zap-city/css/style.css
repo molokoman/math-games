@@ -1759,3 +1759,24 @@ button.fact-chip {
 #screen-end .end-actions {
   margin-top: 0;
 }
+
+
+#screen-end {
+  padding-top: calc(14px + env(safe-area-inset-top, 0px)) !important;
+  justify-content: flex-start !important;
+}
+#screen-end .end-zaps {
+  order: -1;
+  margin: 8px 64px 32px;
+  width: 100%;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+#screen-end .intro-city.mini {
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+#screen-end .end-actions {
+  margin-top: 0;
+  padding-top: 0;
+}
