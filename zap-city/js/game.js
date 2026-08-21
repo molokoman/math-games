@@ -220,10 +220,10 @@ function paintSky() {
   }
 }
 
-function buildCity() {
-  var box = $("buildings");
+function fillBuildings(box, track) {
+  if (!box) return [];
   box.innerHTML = "";
-  cityBuildings = [];
+  var list = [];
   CITY_PLAN.forEach(function (plan, i) {
     var b = document.createElement("div");
     b.className = "building hue-" + plan.hue;
@@ -231,18 +231,23 @@ function buildCity() {
     b.style.height = plan.h + "%";
     var win = "";
     var rows = 3 + (i % 3);
-    var cols = 2;
-    for (var r = 0; r < rows * cols; r++) {
-      win += '<span class="win"></span>';
-    }
+    for (var r = 0; r < rows * 2; r++) win += '<span class="win"></span>';
     b.innerHTML =
       '<div class="b-tip"></div>' +
       '<div class="b-antenna"></div>' +
       '<div class="b-body"><div class="b-windows">' + win + "</div></div>" +
       '<div class="b-boom" aria-hidden="true"></div>';
     box.appendChild(b);
-    cityBuildings.push(b);
+    list.push(b);
   });
+  if (track) cityBuildings = list;
+  return list;
+}
+
+function buildCity() {
+  fillBuildings($("buildings"), true);
+  fillBuildings($("intro-buildings"), false);
+  fillBuildings($("end-buildings"), false);
 }
 
 function closestBuilding(fromX) {
@@ -673,7 +678,7 @@ function boot() {
     stopFalling();
     showScreen("screen-start");
     setZipMood("wave");
-    say("start", "Pick a round — or tap Let’s Go!");
+    say("start", "Choose a wave — or defend the city.");
   });
   $("btn-mute").addEventListener("click", function () { setMuted(!state.muted); });
   document.addEventListener("keydown", onKey);

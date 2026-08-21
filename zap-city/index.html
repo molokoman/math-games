@@ -4,10 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
   <meta name="color-scheme" content="dark" />
-  <meta name="theme-color" content="#071028" />
+  <meta name="theme-color" content="#090014" />
   <title>Zap City</title>
   <link rel="icon" href="assets/zip.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css?v=city2" />
   <!--
     Zap City — a local math game for ages ~7.
     Open this file by double-clicking it. No internet or install needed.
@@ -23,52 +23,23 @@
 
   <!-- START -->
   <section id="screen-start" class="screen active" aria-label="Start screen">
-    <p class="eyebrow">A math sky game</p>
-    <h1 class="title">
-      <span class="title-bolt" aria-hidden="true">⚡</span>
-      Zap City
-      <span class="title-bolt" aria-hidden="true">⚡</span>
-    </h1>
-    <p class="tagline">Numbers fall toward the city. Type the answer to zap them!</p>
+    <p class="eyebrow">Night defense</p>
+    <h1 class="title">ZAP<em>CITY</em></h1>
+    <p class="tagline">Numbers rain on the skyline. Tap the answer. The nearest tower fires.</p>
 
-    <div class="hero-wrap" aria-hidden="true">
-      <div class="hero mood-wave" data-zip>
-        <svg viewBox="0 0 160 180" class="zip-svg" role="img">
-          <defs>
-            <linearGradient id="zipGold" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#fff6b0" />
-              <stop offset="55%" stop-color="#ffd54a" />
-              <stop offset="100%" stop-color="#f0a202" />
-            </linearGradient>
-          </defs>
-          <ellipse class="zip-shadow" cx="80" cy="172" rx="38" ry="7" fill="#000" opacity="0.28" />
-          <path d="M42 152 L52 118 L108 118 L118 152 Z" fill="#2a1848" stroke="#fff8d0" stroke-width="3" stroke-linejoin="round" />
-          <rect x="50" y="72" width="60" height="50" rx="14" fill="url(#zipGold)" stroke="#fff8d0" stroke-width="3" />
-          <rect x="71" y="30" width="18" height="46" rx="6" fill="#7ad7ff" stroke="#fff" stroke-width="3" />
-          <rect x="66" y="20" width="28" height="14" rx="4" fill="#ff6b5a" stroke="#fff" stroke-width="2.5" />
-          <circle class="blush l" cx="58" cy="100" r="7" fill="#ff8a6a" opacity="0.5" />
-          <circle class="blush r" cx="102" cy="100" r="7" fill="#ff8a6a" opacity="0.5" />
-          <g class="eyes">
-            <ellipse class="eye l" cx="68" cy="92" rx="7" ry="8" fill="#2a1848" />
-            <ellipse class="eye r" cx="92" cy="92" rx="7" ry="8" fill="#2a1848" />
-            <circle class="shine" cx="66" cy="89" r="2.2" fill="#fff" />
-            <circle class="shine" cx="90" cy="89" r="2.2" fill="#fff" />
-          </g>
-          <path class="mouth smile" d="M70 108 Q80 118 90 108" fill="none" stroke="#2a1848" stroke-width="3.5" stroke-linecap="round" />
-          <path class="mouth oops" d="M74 110 Q80 104 86 110 Q80 118 74 110" fill="#2a1848" />
-          <ellipse class="mouth wow" cx="80" cy="111" rx="7" ry="8" fill="#2a1848" />
-        </svg>
-      </div>
+    <div class="intro-city" aria-hidden="true">
+      <div class="buildings" id="intro-buildings"></div>
+      <div class="ground"></div>
     </div>
 
-    <p id="speech-start" class="speech" role="status">Hi! I’m Zip. Type the answer on the pad to zap falling numbers!</p>
+    <p id="speech-start" class="how" role="status">Tap the answer before a number hits a building.</p>
 
-    <button id="btn-start" class="btn primary huge" type="button">Let’s Go!</button>
+    <button id="btn-start" class="btn primary huge" type="button">Defend the city</button>
 
-    <p class="pick-label">Or pick a round</p>
+    <p class="pick-label">Choose a wave</p>
     <div class="round-grid" id="round-picks"></div>
 
-    <a href="../" class="btn ghost" id="link-star-quest">Star Quest</a>
+    <a href="../" class="text-link" id="link-star-quest">Star Quest</a>
   </section>
 
   <!-- GAME -->
@@ -101,48 +72,24 @@
 
   <!-- END -->
   <section id="screen-end" class="screen" aria-label="Round finished" hidden>
-    <h2 class="title small">You did it!</h2>
-    <div class="hero-wrap" aria-hidden="true">
-      <div class="hero mood-yay" data-zip>
-        <svg viewBox="0 0 160 180" class="zip-svg" role="img">
-          <defs>
-            <linearGradient id="zipGold3" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#fff6b0" />
-              <stop offset="55%" stop-color="#ffd54a" />
-              <stop offset="100%" stop-color="#f0a202" />
-            </linearGradient>
-          </defs>
-          <ellipse class="zip-shadow" cx="80" cy="172" rx="38" ry="7" fill="#000" opacity="0.28" />
-          <path d="M42 152 L52 118 L108 118 L118 152 Z" fill="#2a1848" stroke="#fff8d0" stroke-width="3" stroke-linejoin="round" />
-          <rect x="50" y="72" width="60" height="50" rx="14" fill="url(#zipGold3)" stroke="#fff8d0" stroke-width="3" />
-          <rect x="71" y="30" width="18" height="46" rx="6" fill="#7ad7ff" stroke="#fff" stroke-width="3" />
-          <rect x="66" y="20" width="28" height="14" rx="4" fill="#ff6b5a" stroke="#fff" stroke-width="2.5" />
-          <circle class="blush l" cx="58" cy="100" r="7" fill="#ff8a6a" opacity="0.5" />
-          <circle class="blush r" cx="102" cy="100" r="7" fill="#ff8a6a" opacity="0.5" />
-          <g class="eyes">
-            <ellipse class="eye l" cx="68" cy="92" rx="7" ry="8" fill="#2a1848" />
-            <ellipse class="eye r" cx="92" cy="92" rx="7" ry="8" fill="#2a1848" />
-            <circle class="shine" cx="66" cy="89" r="2.2" fill="#fff" />
-            <circle class="shine" cx="90" cy="89" r="2.2" fill="#fff" />
-          </g>
-          <path class="mouth smile" d="M70 108 Q80 118 90 108" fill="none" stroke="#2a1848" stroke-width="3.5" stroke-linecap="round" />
-          <path class="mouth oops" d="M74 110 Q80 104 86 110 Q80 118 74 110" fill="#2a1848" />
-          <ellipse class="mouth wow" cx="80" cy="111" rx="7" ry="8" fill="#2a1848" />
-        </svg>
-      </div>
+    <p class="eyebrow">Wave clear</p>
+    <h2 class="title small">Skyline safe</h2>
+    <div class="intro-city mini" aria-hidden="true">
+      <div class="buildings" id="end-buildings"></div>
+      <div class="ground"></div>
     </div>
     <p id="end-zaps" class="end-zaps">7 zaps</p>
-    <p id="speech-end" class="speech" role="status">Wow! You zapped so many!</p>
+    <p id="speech-end" class="how" role="status">Wow! You zapped so many!</p>
     <div class="end-actions">
       <button id="btn-again" class="btn primary huge" type="button">Play again</button>
-      <button id="btn-next" class="btn secondary huge" type="button">Next round</button>
-      <button id="btn-picks" class="btn ghost" type="button">Pick a round</button>
-      <a href="../" class="btn ghost" id="link-star-quest-end">Star Quest</a>
+      <button id="btn-next" class="btn secondary huge" type="button">Next wave</button>
+      <button id="btn-picks" class="btn ghost" type="button">Choose a wave</button>
+      <a href="../" class="text-link" id="link-star-quest-end">Star Quest</a>
     </div>
   </section>
 
   <div id="confetti" aria-hidden="true"></div>
 
-  <script src="js/game.js"></script>
+  <script src="js/game.js?v=city2"></script>
 </body>
 </html>
