@@ -2,14 +2,12 @@
  * Zap City — local math game for late 1st / early 2nd grade (~age 7).
  * Open this folder’s index.html (or Star Quest at ../). No server, no login.
  *
- * A math problem falls toward the city. The kid types the answer on a
- * number pad. Correct: Zip the turret zaps it. If it lands, the city
- * loses a heart (kind voice) and we keep going. 8 problems per round.
+ * A math problem falls toward the city. Tap the answer. A laser zaps it.
+ * A miss blows up the nearest building. When every building is gone, the wave ends.
  */
 
 // ========== TWEAK THESE ==========
 var QUESTIONS_PER_ROUND = 8;
-var STARTING_HEARTS = 3;
 var FALL_MS = 3000;         // default fall
 var SLOW_FALL_MS = 3600;    // round 1
 var SPEED_FALL_MS = 2000;   // speed wave
@@ -497,13 +495,12 @@ function setPadEnabled(on) {
 }
 
 // ---------- HUD ----------
-function renderHearts() {
-  var html = "";
-  for (var i = 0; i < STARTING_HEARTS; i++) {
-    html += '<span class="heart' + (i < state.hearts ? "" : " lost") + '" aria-hidden="true">♥</span>';
-  }
-  $("hearts").innerHTML = html;
-  $("hearts").setAttribute("aria-label", state.hearts + " city hearts left");
+function standingCount() {
+  var n = 0;
+  cityBuildings.forEach(function (b) {
+    if (!b.classList.contains("wrecked")) n += 1;
+  });
+  return n;
 }
 
 function renderProgress() {
@@ -519,8 +516,7 @@ function renderProgress() {
 
 function renderHud() {
   var info = ROUND_INFO[state.roundIndex];
-  $("round-chip").textContent = chipLabel(info);
-  renderHearts();
+  if ($("round-chip")) $("round-chip").textContent = chipLabel(info);
   renderProgress();
 }
 
@@ -647,7 +643,6 @@ function startRound(index) {
   stopFalling();
   state.roundIndex = index;
   state.qIndex = 0;
-  state.hearts = STARTING_HEARTS;
   state.zaps = 0;
   state.results = [];
   state.asked = [];
@@ -767,7 +762,6 @@ function onCityHit() {
     }(doomed), 720);
   }
   if (state.current) recordFact(state.current.prompt, currentKind(), false);
-  if (state.hearts > 0) state.hearts -= 1;
   state.results.push("miss");
   if (state.card) {
     state.card.classList.remove("shake");
@@ -775,14 +769,18 @@ function onCityHit() {
     state.card.classList.add("shake");
   }
   renderHud();
-  say("game", "");
-  window.setTimeout(advance, HIT_PAUSE_MS);
+  var left = standingCount();
+  if (doomed && !doomed.classList.contains("wrecked")) left -= 1;
+  window.setTimeout(function () {
+    if (left <= 0) endRound();
+    else advance();
+  }, HIT_PAUSE_MS);
 }
 
 function advance() {
   stopFalling();
   state.qIndex += 1;
-  if (state.qIndex >= QUESTIONS_PER_ROUND) {
+  if (state.qIndex >= QUESTIONS_PER_ROUND || standingCount() <= 0) {
     endRound();
     return;
   }
@@ -790,15 +788,24 @@ function advance() {
   spawnProblem();
 }
 
+function paintEndCity() {
+  fillBuildings($("end-buildings"), false);
+  var box = $("end-buildings");
+  if (!box) return;
+  var kids = box.children;
+  cityBuildings.forEach(function (b, i) {
+    if (kids[i] && b.classList.contains("wrecked")) kids[i].classList.add("wrecked");
+  });
+}
+
 function endRound() {
   stopFalling();
   showScreen("screen-end");
-  setZipMood("yay");
-  var total = QUESTIONS_PER_ROUND;
+  setZipMood(standingCount() <= 0 ? "oops" : "yay");
   var earned = state.zaps;
-  $("end-zaps").textContent = "⚡ " + earned + " / " + total;
-  say("end", "");
-  $("btn-next").hidden = state.roundIndex >= ROUND_INFO.length - 1;
+  $("end-zaps").textContent = "⚡ " + earned;
+  paintEndCity();
+  $("btn-next").hidden = state.roundIndex >= ROUND_INFO.length - 1 || standingCount() <= 0;
   paintEndFacts();
 }
 
@@ -822,10 +829,7 @@ function paintEndFacts() {
   var info = ROUND_INFO[state.roundIndex];
   var nxt = ROUND_INFO[state.roundIndex + 1];
   if (banner) {
-    if (stats.ready && nxt) {
-      banner.hidden = false;
-      banner.textContent = "★ × " + stats.mastered + "  →  " + chipLabel(nxt);
-    } else if (stats.mastered) {
+    if (stats.mastered) {
       banner.hidden = false;
       banner.textContent = "★ × " + stats.mastered;
     } else {
