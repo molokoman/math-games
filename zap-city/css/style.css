@@ -934,3 +934,9 @@ button, input, a { font: inherit; color: inherit; }
   letter-spacing: 0.02em;
   font-size: 1.15rem;
 }
+
+#screen-start .btn {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+}

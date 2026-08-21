@@ -938,12 +938,7 @@ function paintFactBook() {
     row.className = "fact-row";
     var map = loadFacts();
     var keys = Object.keys(map).filter(function (k) { return map[k].kind === info.kind; });
-    if (!keys.length) {
-      var empty = document.createElement("p");
-      empty.className = "fact-empty";
-      empty.textContent = "▶";
-      wrap.appendChild(empty);
-    } else {
+    if (keys.length) {
       keys.sort().forEach(function (k) { row.appendChild(factChip(k, factStatus(map[k]))); });
       wrap.appendChild(row);
     }
