@@ -1833,3 +1833,8 @@ button.fact-chip {
 #screen-end > .end-mastery { margin: 0 !important; }
 #screen-end > .intro-city { margin: 0 !important; }
 #screen-end > .end-actions { margin-top: 0 !important; padding-bottom: 0; }
+
+
+#screen-end {
+  padding-top: calc(84px + env(safe-area-inset-top, 0px)) !important;
+}
