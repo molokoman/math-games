@@ -1190,10 +1190,10 @@ button.fact-chip {
   font-size: 1.45rem;
   letter-spacing: 0.04em;
   text-align: left;
-  background: var(--neon);
-  color: #041018;
-  border: 2px solid var(--neon);
-  box-shadow: 0 0 16px rgba(46, 245, 255, 0.25);
+  background: #090014;
+  color: #ffe14a;
+  border: 2px solid #ffe14a;
+  box-shadow: none;
 }
 .round-card.btn .round-sym,
 .round-card.btn .round-word,
@@ -1309,4 +1309,12 @@ button.fact-chip {
 #screen-start #btn-facts {
   margin-top: auto;
   margin-bottom: 20px;
+}
+
+#screen-picks .round-grid {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+#screen-picks .btn-back-bottom {
+  margin-top: 0;
 }
