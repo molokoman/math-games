@@ -10,9 +10,9 @@
 // ========== TWEAK THESE ==========
 var QUESTIONS_PER_ROUND = 8;
 var STARTING_HEARTS = 3;
-var FALL_MS = 12000;        // default generous fall — several seconds to think + tap
-var SLOW_FALL_MS = 14500;   // round 1
-var SPEED_FALL_MS = 8400;   // ~70% of FALL_MS
+var FALL_MS = 5000;         // default fall
+var SLOW_FALL_MS = 6200;    // round 1 — still readable, not a slog
+var SPEED_FALL_MS = 3600;   // speed wave
 var LASER_TRAVEL_MS = 560;  // beam climbs from the nearest tower
 var POP_MS = 340;           // problem burst after the beam arrives
 var WRONG_CLEAR_MS = 300;   // shake, then clear typed digits

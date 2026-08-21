@@ -394,17 +394,17 @@ button, input, a { font: inherit; color: inherit; }
 .falling-problem {
   position: absolute;
   top: 8px;
-  min-width: 72px;
-  max-width: min(128px, 38vw);
-  padding: 4px 10px;
-  background: var(--btn-face);
-  color: var(--ink);
-  border: 3px solid #fff;
+  min-width: 86px;
+  max-width: min(160px, 48vw);
+  padding: 7px 12px;
+  background: #f4feff;
+  color: #041018;
+  border: 2px solid #2ef5ff;
   border-radius: 999px;
-  font-size: clamp(1.15rem, 4.6vw, 1.55rem);
+  font-size: clamp(1.45rem, 5.8vw, 1.9rem);
   font-weight: 800;
   line-height: 1.1;
-  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.22);
+  box-shadow: 0 0 12px rgba(46, 245, 255, 0.45);
   text-align: center;
   will-change: transform;
   animation: problem-fall linear forwards;
@@ -707,7 +707,7 @@ button, input, a { font: inherit; color: inherit; }
   }
   #screen-game .progress { display: none; }
   .round-chip { justify-self: end; font-size: 0.78rem; padding: 5px 8px; }
-  .falling-problem { font-size: 1.25rem; padding: 3px 9px; }
+  .falling-problem { font-size: 1.55rem; padding: 6px 11px; }
 }
 
 @media (max-height: 700px) {
