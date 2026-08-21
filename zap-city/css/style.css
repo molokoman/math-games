@@ -1239,3 +1239,64 @@ button.fact-chip {
   72% { transform: scale(3.4); opacity: 0; }
   100% { transform: scale(3.4); opacity: 0; }
 }
+
+.icon-btn {
+  box-shadow: none;
+  background: #090014;
+  color: #2ef5ff;
+  border: 2px solid #2ef5ff;
+  border-radius: 4px;
+}
+.icon-btn.is-muted,
+.icon-btn[aria-pressed="true"] {
+  color: #ff3d8a;
+  border-color: #ff3d8a;
+  background: #090014;
+}
+.icon-btn .ico-sound {
+  width: 26px;
+  height: 26px;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linejoin: miter;
+  stroke-linecap: square;
+}
+.icon-btn .ico-off { display: none; }
+.icon-btn.is-muted .ico-on { display: none; }
+.icon-btn.is-muted .ico-off { display: block; }
+.pad-key { box-shadow: none; }
+.moon {
+  background: transparent;
+  border: 2px solid #ffe14a;
+  box-shadow: none;
+  border-radius: 0;
+}
+.playfield {
+  background: transparent;
+  border: 2px solid #2ef5ff;
+  border-radius: 4px;
+}
+.laser-beam,
+.laser-beam.firing {
+  filter: none;
+  stroke: #2ef5ff;
+  stroke-width: 3;
+  stroke-linecap: square;
+}
+.progress .pip {
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+.progress .pip.done { background: #ffe14a; box-shadow: none; }
+.sky-problem,
+.falling-problem {
+  border-radius: 4px;
+  box-shadow: none;
+}
+.title, .title em { text-shadow: none; }
+.btn, .btn.secondary, .btn.primary, .round-card.btn {
+  box-shadow: none;
+}

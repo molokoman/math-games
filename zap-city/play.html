@@ -7,13 +7,14 @@
   <meta name="theme-color" content="#090014" />
   <title>Zap City</title>
   <link rel="icon" href="assets/zip.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="css/zap.css?v=snd45" />
+  <link rel="stylesheet" href="css/zap.css?v=snd46" />
 </head>
 <body>
   <div id="sky" aria-hidden="true"></div>
 
   <button id="btn-mute" class="icon-btn" type="button" aria-pressed="false" aria-label="Sound is on. Tap to mute.">
-    <span class="icon-sound" data-on="🔊" data-off="🔇">🔊</span>
+    <svg class="ico-sound ico-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9 H9 L14 5 V19 L9 15 H4 Z"/><path d="M17 9 C19 10.2 19 13.8 17 15"/><path d="M19.5 7 C22.2 9.2 22.2 14.8 19.5 17"/></svg>
+    <svg class="ico-sound ico-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9 H9 L14 5 V19 L9 15 H4 Z"/><path d="M16 8 L22 16"/><path d="M22 8 L16 16"/></svg>
   </button>
 
   <section id="screen-start" class="screen active" aria-label="Start">
@@ -91,6 +92,6 @@
   </section>
 
   <div id="confetti" aria-hidden="true"></div>
-  <script src="js/zap.js?v=snd45"></script>
+  <script src="js/zap.js?v=snd46"></script>
 </body>
 </html>

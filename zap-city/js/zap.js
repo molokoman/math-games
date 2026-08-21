@@ -452,7 +452,7 @@ function setMuted(on) {
   var btn = $("btn-mute");
   btn.setAttribute("aria-pressed", state.muted ? "true" : "false");
   btn.setAttribute("aria-label", state.muted ? "Sound is off. Tap to unmute." : "Sound is on. Tap to mute.");
-  btn.querySelector(".icon-sound").textContent = state.muted ? "🔇" : "🔊";
+  btn.classList.toggle("is-muted", state.muted);
   try { localStorage.setItem("zapcity-muted", state.muted ? "1" : "0"); } catch (e) {}
 }
 
