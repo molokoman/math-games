@@ -1713,3 +1713,9 @@ button.fact-chip {
   margin-top: 16px;
   margin-bottom: 136px;
 }
+
+
+#screen-picks .btn-back-bottom {
+  margin-top: 0;
+  margin-bottom: 36px;
+}
