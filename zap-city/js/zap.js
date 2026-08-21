@@ -129,8 +129,24 @@ function bandStats(kind) {
     seen: seen,
     mastered: mastered,
     struggle: struggle,
+    total: bandTotal(kind),
     ready: mastered >= 5 && struggle <= 1
   };
+}
+
+function bandTotal(kind) {
+  var n = 0, s, a, b;
+  function addPairs(minSum, maxSum) {
+    for (s = minSum; s <= maxSum; s++) n += s - 1;
+  }
+  function subPairs(minA, maxA) {
+    for (a = minA; a <= maxA; a++) n += a;
+  }
+  if (kind === "add10") addPairs(4, 10);
+  else if (kind === "add20") addPairs(10, 20);
+  else if (kind === "sub10") subPairs(4, 10);
+  else { addPairs(6, 20); subPairs(6, 20); }
+  return n;
 }
 function strugglePool(kind) {
   var map = loadFacts();
@@ -897,7 +913,7 @@ function paintEndFacts() {
   if (banner) {
     if (stats.mastered) {
       banner.hidden = false;
-      banner.textContent = "★ × " + stats.mastered;
+      banner.textContent = "★ " + stats.mastered + " / " + stats.total;
     } else {
       banner.hidden = true;
     }
@@ -916,7 +932,7 @@ function paintFactBook() {
     wrap.className = "fact-band";
     var h = document.createElement("h3");
     var stats = bandStats(info.kind);
-    h.textContent = info.name + (info.range ? " " + info.range : "") + "  ·  " + stats.mastered + " mastered";
+    h.textContent = info.name + (info.range ? " " + info.range : "") + "  ·  " + stats.mastered + " / " + stats.total + " mastered";
     wrap.appendChild(h);
     var row = document.createElement("div");
     row.className = "fact-row";
