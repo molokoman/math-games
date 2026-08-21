@@ -32,7 +32,6 @@ var HIT = ["💥"];
 var state = {
   roundIndex: 0,
   qIndex: 0,
-  hearts: STARTING_HEARTS,
   zaps: 0,
   results: [],
   current: null,
@@ -995,7 +994,6 @@ function boot() {
     startRound(round);
   } else if (shot === "end") {
     state.zaps = 7;
-    state.hearts = 2;
     state.roundIndex = 0;
     endRound();
   }
