@@ -1566,3 +1566,29 @@ button.fact-chip {
   margin-top: 16px;
   margin-bottom: 56px;
 }
+
+
+#screen-game #typed.typed,
+#screen-game .typed {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  z-index: 5;
+  margin: 0;
+  min-height: 0;
+  font-size: 1.6rem;
+  text-shadow: none;
+  pointer-events: none;
+}
+#screen-game #typed.empty,
+#screen-game .typed.empty {
+  display: none !important;
+}
+#screen-game .dock {
+  padding-top: 8px;
+}
+#screen-game .playfield {
+  flex: 1 1 auto;
+  min-height: 0;
+}
