@@ -1038,3 +1038,11 @@ button.fact-chip {
 }
 .b-body { top: 11px; }
 .building.firing .b-spire { border-bottom-color: #fff; filter: drop-shadow(0 0 6px #2ef5ff); }
+
+.end-mastery {
+  width: 100%;
+  max-width: 360px;
+  margin: 8px auto 0;
+  padding: 8px 4px 12px;
+  cursor: pointer;
+}

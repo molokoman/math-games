@@ -951,9 +951,7 @@ function paintEndFacts() {
   var map = loadFacts();
   (state.waveFacts || []).forEach(function (k) {
     var row = map[k];
-    var chip = factChip(k, factStatus(row), true);
-    chip.addEventListener("click", function () { openFacts("screen-end"); });
-    box.appendChild(chip);
+    box.appendChild(factChip(k, factStatus(row)));
   });
 }
 
@@ -1085,13 +1083,16 @@ function boot() {
     showScreen(state.factsFrom || "screen-start");
     say("start", "");
   });
-  if ($("end-key")) $("end-key").addEventListener("click", function (e) {
-    if (e.target.closest("[data-open-facts], .fact-chip")) openFacts("screen-end");
-  });
+  if ($("end-mastery")) {
+    $("end-mastery").addEventListener("click", function () { openFacts("screen-end"); });
+    $("end-mastery").addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openFacts("screen-end"); }
+    });
+  }
   document.addEventListener("keydown", onKey);
   document.addEventListener("pointerdown", function (e) {
     unlockAudio();
-    var btn = e.target.closest("button, .round-card, .pad-key");
+    var btn = e.target.closest("button, .round-card, .pad-key, #end-mastery");
     if (!btn || btn.disabled || (btn.classList && btn.classList.contains("deco"))) return;
     if (btn.classList.contains("pad-key") || (btn.closest && btn.closest("#pad"))) playClick();
     else playZap();
