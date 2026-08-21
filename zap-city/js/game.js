@@ -103,10 +103,11 @@ function saveFacts(map) {
 function factStatus(row) {
   var t = (row && row.tries) || [];
   if (!t.length) return "new";
-  var last3 = t.slice(-MASTER_STREAK);
-  if (last3.length >= MASTER_STREAK && last3.every(function (x) { return x; })) return "mastered";
   var last2 = t.slice(-2);
   if (last2.length >= 2 && !last2[0] && !last2[1]) return "struggle";
+  for (var i = 0; i <= t.length - MASTER_STREAK; i++) {
+    if (t[i] && t[i + 1] && t[i + 2]) return "mastered";
+  }
   return "learning";
 }
 function recordFact(prompt, kind, ok) {
@@ -172,21 +173,40 @@ function makeSub(maxMinuend, minMinuend) {
   return { prompt: a + " − " + b, answer: a - b };
 }
 
-function isMasteredPrompt(prompt, kind) {
-  var row = loadFacts()[prompt];
-  return !!(row && row.kind === kind && factStatus(row) === "mastered");
+function masteredPool(kind) {
+  var map = loadFacts();
+  var out = [];
+  Object.keys(map).forEach(function (k) {
+    if (map[k].kind === kind && factStatus(map[k]) === "mastered") out.push(k);
+  });
+  return out;
+}
+
+function pickUnused(pool) {
+  var i, p, unused = [];
+  for (i = 0; i < pool.length; i++) {
+    p = parsePrompt(pool[i]);
+    if (p && state.asked.indexOf(uniqueKey(p)) === -1) unused.push(p);
+  }
+  return unused.length ? pick(unused) : null;
 }
 
 function nextQuestion(kind) {
-  var pool = strugglePool(kind);
-  if (pool.length && Math.random() < 0.5) {
-    var picked = parsePrompt(pick(pool));
-    if (picked && state.asked.indexOf(uniqueKey(picked)) === -1) {
+  var picked;
+  if (Math.random() < 0.5) {
+    picked = pickUnused(strugglePool(kind));
+    if (picked) {
       state.asked.push(uniqueKey(picked));
       return picked;
     }
   }
-  var review = Math.random() < 0.1;
+  if (Math.random() < 0.28) {
+    picked = pickUnused(masteredPool(kind));
+    if (picked) {
+      state.asked.push(uniqueKey(picked));
+      return picked;
+    }
+  }
   var q, tries = 0;
   do {
     if (kind === "add10") q = makeAdd(10, 4);
@@ -197,10 +217,15 @@ function nextQuestion(kind) {
   } while (
     tries < 40 &&
     (state.asked.indexOf(uniqueKey(q)) !== -1 ||
-      (!review && isMasteredPrompt(q.prompt, kind)))
+      isMasteredPrompt(q.prompt, kind))
   );
   state.asked.push(uniqueKey(q));
   return q;
+}
+
+function isMasteredPrompt(prompt, kind) {
+  var row = loadFacts()[prompt];
+  return !!(row && row.kind === kind && factStatus(row) === "mastered");
 }
 
 // ---------- audio (Web Audio beeps — no files) ----------
