@@ -1074,14 +1074,16 @@ function boot() {
     stopFalling();
     showScreen("screen-picks");
   });
-  if ($("btn-picks-back")) $("btn-picks-back").addEventListener("click", function () {
-    showScreen("screen-start");
+  document.querySelectorAll("[data-back=picks]").forEach(function (b) {
+    b.addEventListener("click", function () { showScreen("screen-start"); });
   });
   $("btn-mute").addEventListener("click", function () { setMuted(!state.muted); });
   if ($("btn-facts")) $("btn-facts").addEventListener("click", function () { openFacts("screen-start"); });
-  if ($("btn-facts-back")) $("btn-facts-back").addEventListener("click", function () {
-    showScreen(state.factsFrom || "screen-start");
-    say("start", "");
+  document.querySelectorAll("[data-back=facts]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      showScreen(state.factsFrom || "screen-start");
+      say("start", "");
+    });
   });
   if ($("end-mastery")) {
     $("end-mastery").addEventListener("click", function () { openFacts("screen-end"); });

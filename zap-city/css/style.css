@@ -955,15 +955,16 @@ button.fact-chip {
   max-width: 320px;
 }
 
-#screen-picks #btn-picks-back {
-  margin-top: auto;
+#screen-picks,
+#screen-facts {
+  padding-top: 72px;
+}
+.btn-nav-back {
   width: 100%;
   max-width: 320px;
 }
-#screen-facts #btn-facts-back {
+.btn-back-bottom {
   margin-top: auto;
-  width: 100%;
-  max-width: 320px;
 }
 
 .end-key {
