@@ -987,3 +987,15 @@ button, input, a { font: inherit; color: inherit; }
   color-scheme: only light;
   border-color: #111;
 }
+
+#screen-start .intro-city {
+  margin-top: 48px;
+  margin-bottom: 0;
+}
+#screen-start #btn-start {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+#screen-start #btn-facts {
+  margin-top: 0;
+}
