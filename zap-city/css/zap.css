@@ -255,8 +255,8 @@ button, input, a { font: inherit; color: inherit; }
 
 .icon-btn {
   position: fixed;
-  top: 10px;
-  right: 10px;
+  top: calc(10px + env(safe-area-inset-top, 0px));
+  right: calc(10px + env(safe-area-inset-right, 0px));
   z-index: 5;
   width: 56px;
   height: 56px;
@@ -958,7 +958,22 @@ button.fact-chip {
 
 #screen-picks,
 #screen-facts {
-  padding-top: calc(96px + env(safe-area-inset-top, 0px));
+  padding-top: calc(12px + env(safe-area-inset-top, 0px));
+}
+.page-top {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  padding-right: 72px;
+  margin-bottom: 10px;
+}
+.page-top .btn-nav-back {
+  width: auto;
+  min-width: 0;
+  max-width: 100%;
+  font-size: 1.2rem;
+  padding: 12px 18px;
+  min-height: 52px;
 }
 .btn-nav-back {
   width: 100%;
