@@ -1005,26 +1005,19 @@ button, input, a { font: inherit; color: inherit; }
   display: block !important;
   left: 50%;
   top: 0;
-  width: 2px;
-  height: 16px;
-  margin-left: -1px;
-  background: #c5d0da;
-  border-radius: 1px;
+  width: 6px;
+  height: 20px;
+  margin-left: -3px;
+  background: linear-gradient(180deg, #f3f6f8 0%, #8b97a3 100%);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  border-radius: 0;
   box-shadow: none;
   z-index: 2;
 }
 .b-antenna::before,
-.b-antenna::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  height: 2px;
-  background: #c5d0da;
-}
-.b-antenna::before { top: 1px; width: 11px; margin-left: -5.5px; }
-.b-antenna::after { top: 5px; width: 7px; margin-left: -3.5px; background: #a8b4c0; }
-.b-body { top: 16px; }
-.building.firing .b-antenna { background: #fff; box-shadow: 0 0 8px #2ef5ff; }
+.b-antenna::after { content: none !important; }
+.b-body { top: 18px; }
+.building.firing .b-antenna { filter: brightness(1.8); box-shadow: 0 0 8px #2ef5ff; }
 #screen-start .intro-city { margin-top: 48px; margin-bottom: 0; }
 #screen-start #btn-start { margin-top: auto; margin-bottom: auto; }
 #screen-start #btn-facts { margin-top: 0; }

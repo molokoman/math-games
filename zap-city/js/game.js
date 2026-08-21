@@ -689,6 +689,7 @@ function spawnProblem() {
   box.innerHTML = "";
   var card = document.createElement("div");
   card.className = "falling-problem";
+  card.style.animation = "none";
   card.textContent = state.current.prompt;
   box.appendChild(card);
   if (state.current && state.waveFacts.indexOf(state.current.prompt) === -1) {
@@ -703,17 +704,21 @@ function spawnProblem() {
   var fieldR = field.getBoundingClientRect();
   var cardR = card.getBoundingClientRect();
   var roofB = closestBuilding(cardR.left + cardR.width / 2);
-  var roofTop = roofB ? roofB.getBoundingClientRect().top : (fieldR.bottom - 16);
-  var dist = roofTop - cardR.top - card.offsetHeight + 8;
-  if (dist < 36) dist = 36;
+  var body = roofB && roofB.querySelector(".b-body");
+  var roofTop = body ? body.getBoundingClientRect().top : ($("city").getBoundingClientRect().bottom - 10);
+  var dist = roofTop - cardR.top - card.offsetHeight + 6;
+  if (dist < field.clientHeight * 0.55) dist = field.clientHeight - ($("city").offsetHeight || 80) - card.offsetHeight + 18;
+  if (dist < 80) dist = 80;
   card.style.setProperty("--fall-distance", dist + "px");
   state.card = card;
 
   var ms = fallDuration();
   if (state.reduceMotion) {
-    card.style.transform = "translate3d(0, " + Math.round(dist * 0.22) + "px, 0)";
+    card.style.transform = "translate3d(0, " + Math.round(dist) + "px, 0)";
     state.fallTimer = window.setTimeout(function () { onCityHit(); }, ms);
   } else {
+    void card.offsetWidth;
+    card.style.animation = "";
     card.style.animationDuration = ms + "ms";
     card.addEventListener("animationend", onFallEnd);
   }
