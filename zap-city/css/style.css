@@ -1636,3 +1636,19 @@ button.fact-chip {
   font-size: 0.78rem;
   box-sizing: border-box;
 }
+
+
+#screen-end #end-key.end-key,
+#screen-end #end-facts.fact-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  width: 100%;
+  justify-content: stretch;
+}
+#screen-end #end-key .fact-chip,
+#screen-end #end-facts .fact-chip {
+  width: 100%;
+  min-width: 0;
+  flex: none;
+}
