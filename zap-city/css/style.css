@@ -1012,8 +1012,8 @@ button.fact-chip {
   margin-bottom: 0;
 }
 #screen-start #btn-start {
-  margin-top: auto;
-  margin-bottom: auto;
+  margin-top: 22px;
+  margin-bottom: 0;
 }
 #screen-start #btn-facts {
   margin-top: 0;
