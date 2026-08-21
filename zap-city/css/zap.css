@@ -1964,3 +1964,68 @@ button.fact-chip {
 #screen-end.end-scooch > .end-actions {
   margin-top: 22px !important;
 }
+
+
+/* ===== Google save (kid-simple, phone-first) ===== */
+.account-bar {
+  width: 100%;
+  max-width: 320px;
+  margin: 10px 0 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+#screen-start .btn.google {
+  background: #fff;
+  color: #1f1f1f;
+  -webkit-text-fill-color: #1f1f1f;
+  color-scheme: only light;
+  border: 2px solid #dadce0;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  min-height: 64px;
+  gap: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+}
+#screen-start .btn.google:hover { filter: none; background: #f7f8f8; }
+.ico-google {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+}
+.account-in {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.account-hello {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--neon);
+}
+#screen-start .btn.tiny,
+.btn.tiny {
+  min-width: 0;
+  min-height: 48px;
+  width: auto;
+  max-width: 100%;
+  padding: 10px 18px;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+}
+.account-hint,
+.account-status {
+  font-size: 0.95rem;
+  font-weight: 650;
+  color: var(--cream-soft);
+  max-width: 28ch;
+  line-height: 1.35;
+}
+.account-status.ok { color: var(--mint); }
+.account-status.warn { color: #ffe14a; }
+#screen-start #btn-facts { margin-bottom: 0; }

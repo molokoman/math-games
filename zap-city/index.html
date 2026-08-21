@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#090014" />
   <title>Zap City</title>
   <link rel="icon" href="assets/zip.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="css/zap.css?v=snd87" />
+  <link rel="stylesheet" href="css/zap.css?v=g1" />
 </head>
 <body>
   <div id="sky" aria-hidden="true"></div>
@@ -28,6 +28,18 @@
     </div>
 <button id="btn-start" class="btn primary huge" type="button" aria-label="Defend city"><svg class="ico-shield" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 L20 6.5 V12.2 C20 16.8 16.6 20.2 12 21.5 C7.4 20.2 4 16.8 4 12.2 V6.5 Z" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linejoin="miter"/></svg> Defend city</button>
     <button id="btn-facts" class="btn secondary huge" type="button" aria-label="Mastery">★ Mastery</button>
+    <div id="account-bar" class="account-bar">
+      <button id="btn-google" class="btn google" type="button" aria-label="Continue with Google">
+        <svg class="ico-google" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 8 3.1l5.7-5.7C34.2 6.1 29.4 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.3-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 12 24 12c3.1 0 5.8 1.2 8 3.1l5.7-5.7C34.2 6.1 29.4 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 10-2 13.6-5.2l-6.3-5.3C29.2 35.1 26.7 36 24 36c-5.3 0-9.7-3.3-11.3-8l-6.5 5C9.6 39.6 16.3 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-1.1 3.2-3.5 5.8-6.6 7.5l.1.1 6.3 5.3C36.7 41.3 44 36 44 24c0-1.2-.1-2.3-.4-3.5z"/></svg>
+        Continue with Google
+      </button>
+      <div id="account-in" class="account-in" hidden>
+        <p id="account-hello" class="account-hello">Hi</p>
+        <button id="btn-signout" class="btn ghost tiny" type="button">Sign out</button>
+      </div>
+      <p id="account-hint" class="account-hint">Play now. Save with Google so your stars follow you.</p>
+      <p id="account-status" class="account-status" hidden></p>
+    </div>
   </section>
 
   <section id="screen-picks" class="screen" aria-label="Pick a wave" hidden>
@@ -86,6 +98,11 @@
   </section>
 
   <div id="confetti" aria-hidden="true"></div>
-  <script src="js/zap.js?v=snd87"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js?v=g1"></script>
+  <script src="js/cloud.js?v=g1"></script>
+  <script src="js/zap.js?v=g1"></script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 /**
  * Zap City — local math game for late 1st / early 2nd grade (~age 7).
- * Open this folder’s index.html (or Star Quest at ../). No server, no login.
+ * Open this folder’s index.html (or Star Quest at ../). Guest play needs no login.
+ * Signed-in kids save mastery to the cloud so stars follow them across devices.
  *
  * A math problem falls toward the city. Tap the answer. A laser zaps it.
  * A miss blows up the nearest building. When every building is gone, the wave ends.
@@ -85,7 +86,7 @@ function fallDuration() {
 }
 
 
-// ---------- mastery (saved on this phone, no login) ----------
+// ---------- mastery (local cache; cloud when signed in) ----------
 var FACTS_KEY = "zapcity-facts-v1";
 var MASTER_STREAK = 3;
 
@@ -95,6 +96,11 @@ function loadFacts() {
 }
 function saveFacts(map) {
   try { localStorage.setItem(FACTS_KEY, JSON.stringify(map)); } catch (e) {}
+  try {
+    if (window.ZapCloud && typeof window.ZapCloud.schedulePush === "function") {
+      window.ZapCloud.schedulePush(map);
+    }
+  } catch (e) {}
 }
 function factStatus(row) {
   var t = (row && row.tries) || [];
@@ -1257,6 +1263,11 @@ function boot() {
   document.addEventListener("touchstart", unlockAudio, true);
   try { localStorage.removeItem("zapcity-muted"); } catch (e) {}
   setMuted(false);
+  try {
+    if (window.ZapCloud && typeof window.ZapCloud.boot === "function") {
+      window.ZapCloud.boot();
+    }
+  } catch (e) {}
 
   var params = new URLSearchParams(window.location.search);
   var shot = params.get("shot");
