@@ -13,10 +13,11 @@ var STARTING_HEARTS = 3;
 var FALL_MS = 12000;        // default generous fall — several seconds to think + tap
 var SLOW_FALL_MS = 14500;   // round 1
 var SPEED_FALL_MS = 8400;   // ~70% of FALL_MS
-var ZAP_ANIM_MS = 400;      // laser + pop
+var LASER_TRAVEL_MS = 560;  // beam climbs from the nearest tower
+var POP_MS = 340;           // problem burst after the beam arrives
 var WRONG_CLEAR_MS = 300;   // shake, then clear typed digits
-var HIT_PAUSE_MS = 1050;    // kind pause after a rooftop bonk
-var NEXT_PAUSE_MS = 520;    // breath after a zap before the next fall
+var HIT_PAUSE_MS = 1050;    // kind pause after a rooftop boom
+var NEXT_PAUSE_MS = 420;    // breath after a zap before the next fall
 // =================================
 
 var ROUND_INFO = [
@@ -54,6 +55,17 @@ var state = {
 };
 
 var audioCtx = null;
+var cityBuildings = [];
+
+var CITY_PLAN = [
+  { h: 52, hue: "violet" },
+  { h: 70, hue: "teal" },
+  { h: 44, hue: "blue" },
+  { h: 78, hue: "gold" },
+  { h: 58, hue: "teal" },
+  { h: 66, hue: "violet" },
+  { h: 48, hue: "blue" }
+];
 
 // ---------- tiny helpers ----------
 function $(id) { return document.getElementById(id); }
@@ -208,6 +220,59 @@ function paintSky() {
   }
 }
 
+function buildCity() {
+  var box = $("buildings");
+  box.innerHTML = "";
+  cityBuildings = [];
+  CITY_PLAN.forEach(function (plan, i) {
+    var b = document.createElement("div");
+    b.className = "building hue-" + plan.hue;
+    b.dataset.building = String(i);
+    b.style.height = plan.h + "%";
+    var win = "";
+    var rows = 3 + (i % 3);
+    var cols = 2;
+    for (var r = 0; r < rows * cols; r++) {
+      win += '<span class="win"></span>';
+    }
+    b.innerHTML =
+      '<div class="b-tip"></div>' +
+      '<div class="b-antenna"></div>' +
+      '<div class="b-body"><div class="b-windows">' + win + "</div></div>" +
+      '<div class="b-boom" aria-hidden="true"></div>';
+    box.appendChild(b);
+    cityBuildings.push(b);
+  });
+}
+
+function closestBuilding(fromX) {
+  var best = null;
+  var bestD = 1e9;
+  var fallback = null;
+  var fallD = 1e9;
+  cityBuildings.forEach(function (b) {
+    var r = b.getBoundingClientRect();
+    var cx = r.left + r.width / 2;
+    var d = Math.abs(cx - fromX);
+    if (d < fallD) {
+      fallback = b;
+      fallD = d;
+    }
+    if (b.classList.contains("wrecked")) return;
+    if (d < bestD) {
+      best = b;
+      bestD = d;
+    }
+  });
+  return best || fallback;
+}
+
+function resetCity() {
+  cityBuildings.forEach(function (b) {
+    b.classList.remove("firing", "explode", "wrecked");
+  });
+}
+
 function buildPad() {
   var box = $("pad");
   box.innerHTML = "";
@@ -300,7 +365,7 @@ function clearLaser() {
     line.setAttribute("x2", "0");
     line.setAttribute("y2", "0");
   }
-  $("turret").classList.remove("firing");
+  cityBuildings.forEach(function (b) { b.classList.remove("firing"); });
 }
 
 function stopFalling() {
@@ -316,16 +381,19 @@ function onFallEnd(e) {
   onCityHit();
 }
 
-function fireLaser(card) {
-  if (state.reduceMotion) return;
+function fireLaser(card, building) {
+  if (state.reduceMotion || !card) return;
+  building = building || closestBuilding(card.getBoundingClientRect().left + card.offsetWidth / 2);
+  if (!building) return;
   var fieldEl = $("playfield");
   var field = fieldEl.getBoundingClientRect();
-  var tip = $("turret").getBoundingClientRect();
+  var tipEl = building.querySelector(".b-tip") || building;
+  var tip = tipEl.getBoundingClientRect();
   var tgt = card.getBoundingClientRect();
   var layer = $("laser-layer");
   layer.setAttribute("viewBox", "0 0 " + Math.max(1, field.width) + " " + Math.max(1, field.height));
   var x1 = tip.left + tip.width / 2 - field.left;
-  var y1 = tip.top + 6 - field.top;
+  var y1 = tip.top + tip.height / 2 - field.top;
   var x2 = tgt.left + tgt.width / 2 - field.left;
   var y2 = tgt.top + tgt.height / 2 - field.top;
   var line = $("laser-beam");
@@ -333,8 +401,15 @@ function fireLaser(card) {
   line.setAttribute("y1", String(y1));
   line.setAttribute("x2", String(x2));
   line.setAttribute("y2", String(y2));
+  var len = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+  line.style.strokeDasharray = String(Math.max(40, len));
+  line.style.strokeDashoffset = String(Math.max(40, len));
+  line.style.animationDuration = LASER_TRAVEL_MS + "ms";
+  line.classList.remove("firing");
+  void line.getBoundingClientRect();
   line.classList.add("firing");
-  $("turret").classList.add("firing");
+  cityBuildings.forEach(function (b) { b.classList.remove("firing"); });
+  building.classList.add("firing");
 }
 
 function spawnProblem() {
@@ -392,6 +467,7 @@ function startRound(index) {
   state.typed = "";
   state.locked = true;
   state.current = nextQuestion(ROUND_INFO[index].kind);
+  resetCity();
   showScreen("screen-game");
   setZipMood("think");
   renderHud();
@@ -431,21 +507,23 @@ function zapCorrect() {
   renderHud();
 
   var card = state.card;
+  var travel = state.reduceMotion ? 80 : LASER_TRAVEL_MS;
   if (card && !state.reduceMotion) {
     card.style.animationPlayState = "paused";
     var field = $("playfield").getBoundingClientRect();
     var cardR = card.getBoundingClientRect();
     card.style.setProperty("--hold-y", (cardR.top - field.top - 8) + "px");
-    fireLaser(card);
+    var shooter = closestBuilding(cardR.left + cardR.width / 2);
+    fireLaser(card, shooter);
     window.setTimeout(function () {
       if (state.card === card) card.classList.add("pop");
       clearLaser();
-    }, 150);
+    }, travel);
   } else if (card) {
     card.classList.add("pop");
   }
 
-  window.setTimeout(advance, ZAP_ANIM_MS + NEXT_PAUSE_MS);
+  window.setTimeout(advance, travel + POP_MS + NEXT_PAUSE_MS);
 }
 
 function onCityHit() {
@@ -459,6 +537,19 @@ function onCityHit() {
   city.classList.remove("bonk");
   void city.offsetWidth;
   city.classList.add("bonk");
+  var hitX = state.card ? (state.card.getBoundingClientRect().left + state.card.offsetWidth / 2) : 0;
+  var doomed = closestBuilding(hitX);
+  if (doomed) {
+    doomed.classList.remove("explode");
+    void doomed.offsetWidth;
+    doomed.classList.add("explode");
+    window.setTimeout(function (b) {
+      return function () {
+        b.classList.remove("explode", "firing");
+        b.classList.add("wrecked");
+      };
+    }(doomed), 520);
+  }
   if (state.hearts > 0) state.hearts -= 1;
   state.results.push("miss");
   if (state.card) {
@@ -570,6 +661,7 @@ function boot() {
   }
 
   paintSky();
+  buildCity();
   buildPad();
   buildRoundPicks("round-picks", startRound);
   $("btn-start").addEventListener("click", function () { startRound(0); });
