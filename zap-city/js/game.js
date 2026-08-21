@@ -933,7 +933,6 @@ function endRound() {
   var earned = state.zaps;
   $("end-zaps").textContent = "⚡ " + earned;
   paintEndCity();
-  $("btn-next").hidden = state.roundIndex >= ROUND_INFO.length - 1 || standingCount() <= 0;
   paintEndFacts();
 }
 
@@ -1074,9 +1073,6 @@ function boot() {
     showScreen("screen-picks");
   });
   $("btn-again").addEventListener("click", function () { startRound(state.roundIndex); });
-  $("btn-next").addEventListener("click", function () {
-    startRound(Math.min(state.roundIndex + 1, ROUND_INFO.length - 1));
-  });
   $("btn-picks").addEventListener("click", function () {
     stopFalling();
     showScreen("screen-picks");
@@ -1086,7 +1082,6 @@ function boot() {
   });
   $("btn-mute").addEventListener("click", function () { setMuted(!state.muted); });
   if ($("btn-facts")) $("btn-facts").addEventListener("click", function () { openFacts("screen-start"); });
-  if ($("btn-facts-end")) $("btn-facts-end").addEventListener("click", function () { openFacts("screen-end"); });
   if ($("btn-facts-back")) $("btn-facts-back").addEventListener("click", function () {
     showScreen(state.factsFrom || "screen-start");
     say("start", "");
