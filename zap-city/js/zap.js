@@ -922,10 +922,8 @@ function paintEndFacts() {
 
 function paintFactBook() {
   var bands = $("facts-bands");
-  var banner = $("facts-ready");
   if (!bands) return;
   bands.innerHTML = "";
-  var readyBits = [];
   ROUND_INFO.forEach(function (info, i) {
     if (info.kind === "mix20" && i > 0 && ROUND_INFO[i - 1].kind === "mix20") return;
     var wrap = document.createElement("div");
@@ -942,20 +940,8 @@ function paintFactBook() {
       keys.sort().forEach(function (k) { row.appendChild(factChip(k, factStatus(map[k]))); });
       wrap.appendChild(row);
     }
-    if (stats.ready) {
-      var next = ROUND_INFO[i + 1];
-      readyBits.push(chipLabel(info) + (next ? (" → " + chipLabel(next)) : " ★"));
-    }
     bands.appendChild(wrap);
   });
-  if (banner) {
-    if (readyBits.length) {
-      banner.hidden = false;
-      banner.textContent = readyBits.join("   ");
-    } else {
-      banner.hidden = true;
-    }
-  }
 }
 
 function openFacts() {
