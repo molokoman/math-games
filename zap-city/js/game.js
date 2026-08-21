@@ -314,11 +314,10 @@ function buildSounds() {
     var env = Math.max(0, 1 - t / 0.16);
     return Math.sin(t * (240 - t * 700) * 6.283) * 0.35 * env;
   });
-  htmlSounds.click = makeSound(0.07, function (t) {
-    var f = t < 0.028 ? 1320 : 880;
-    var env = Math.exp(-t * 36);
-    var sq = Math.sin(t * f * 6.283) >= 0 ? 1 : -1;
-    return sq * env * 0.46;
+  htmlSounds.click = makeSound(0.03, function (t) {
+    var env = Math.exp(-t * 90);
+    var sq = Math.sin(t * 1480 * 6.283) >= 0 ? 1 : -1;
+    return sq * env * 0.14;
   });
 }
 
@@ -1094,7 +1093,8 @@ function boot() {
     unlockAudio();
     var btn = e.target.closest("button, .round-card, .pad-key");
     if (!btn || btn.disabled || (btn.classList && btn.classList.contains("deco"))) return;
-    playClick();
+    if (btn.classList.contains("pad-key") || (btn.closest && btn.closest("#pad"))) playClick();
+    else playZap();
   }, true);
   document.addEventListener("touchstart", unlockAudio, true);
   try { localStorage.removeItem("zapcity-muted"); } catch (e) {}
