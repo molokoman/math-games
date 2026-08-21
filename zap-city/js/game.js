@@ -249,6 +249,27 @@ function makeSound(seconds, sampleFn) {
   return a;
 }
 
+function noise01(i, seed) {
+  var x = Math.sin(i * 12.9898 + seed * 78.233) * 43758.5453;
+  return (x - Math.floor(x)) * 2 - 1;
+}
+
+function crashFn(kind) {
+  var brown = 0;
+  return function (t, i) {
+    var white = noise01(i, 1);
+    var grit = noise01(i, 7);
+    brown += white * 0.06;
+    brown *= 0.97;
+    var click = t < 0.016 ? (white > 0 ? 1 : -1) * (1 - t / 0.016) : 0;
+    var shatter = (white * 0.65 + grit * 0.45) * Math.exp(-t * 11);
+    var rumble = brown * Math.exp(-t * 3.1) * 1.35;
+    var wood = grit * Math.exp(-t * 6.5) * (t > 0.02 ? 0.55 : 0.15);
+    var extra = kind === "hit" ? rumble * 0.25 : 0;
+    return click * 0.98 + shatter * 0.85 + rumble + wood + extra;
+  };
+}
+
 function buildSounds() {
   if (htmlSounds.zap) return;
   htmlSounds.zap = makeSound(0.52, function (t) {
@@ -256,19 +277,8 @@ function buildSounds() {
     var f = 1500 - t * 2000;
     return Math.sin(t * f * 6.283) * 0.7 * env + ((t * 90) % 2 - 1) * 0.22 * env;
   });
-  htmlSounds.blast = makeSound(0.58, function (t, i) {
-    var n1 = ((i * 16807) % 2000) / 1000 - 1;
-    var n2 = ((i * 48271) % 2000) / 1000 - 1;
-    var bang = t < 0.045 ? (n1 > 0 ? 1 : -1) * (1 - t / 0.045) : 0;
-    var crack = (n1 * 0.7 + n2 * 0.3) * Math.exp(-t * 9);
-    var thump = Math.sin(t * 42 * 6.283) * Math.exp(-t * 6);
-    var boom = Math.sin(t * 28 * 6.283) * Math.exp(-t * 4.2);
-    return bang * 1 + crack * 0.95 + thump * 0.9 + boom * 0.75;
-  });
-  htmlSounds.hit = makeSound(0.4, function (t, i) {
-    var env = Math.exp(-t * 6);
-    return (Math.sin(t * 55 * 6.283) * 0.6 + (((i * 48271) % 1000) / 500 - 1) * 0.35) * env;
-  });
+  htmlSounds.blast = makeSound(0.72, crashFn("blast"));
+  htmlSounds.hit = makeSound(0.72, crashFn("hit"));
   htmlSounds.wrong = makeSound(0.16, function (t) {
     var env = Math.max(0, 1 - t / 0.16);
     return Math.sin(t * (240 - t * 700) * 6.283) * 0.35 * env;
@@ -359,8 +369,6 @@ function playWrong() {
 
 function playHit() {
   playHtml("hit");
-  tone(90, 0.28, "square", 0.36);
-  tone(48, 0.4, "sine", 0.32);
 }
 
 function playZap() {
@@ -371,10 +379,6 @@ function playZap() {
 
 function playBlast() {
   playHtml("blast");
-  tone(36, 0.5, "sine", 0.58);
-  tone(72, 0.36, "square", 0.48);
-  tone(160, 0.1, "square", 0.4);
-  tone(50, 0.45, "sawtooth", 0.32);
 }
 
 function flashField() {
@@ -674,10 +678,13 @@ function spawnProblem() {
   if (skyQ) skyQ.textContent = state.current.prompt;
 
   var field = $("playfield");
-  var cityH = $("city").offsetHeight || 72;
   var maxLeft = Math.max(8, field.clientWidth - card.offsetWidth - 8);
   card.style.left = rand(8, maxLeft) + "px";
-  var dist = field.clientHeight - cityH - card.offsetHeight - 10;
+  var fieldR = field.getBoundingClientRect();
+  var cardR = card.getBoundingClientRect();
+  var roofB = closestBuilding(cardR.left + cardR.width / 2);
+  var roofTop = roofB ? roofB.getBoundingClientRect().top : (fieldR.bottom - 16);
+  var dist = roofTop - cardR.top - card.offsetHeight + 8;
   if (dist < 36) dist = 36;
   card.style.setProperty("--fall-distance", dist + "px");
   state.card = card;
@@ -750,10 +757,12 @@ function zapCorrect() {
   var card = state.card;
   var travel = state.reduceMotion ? 80 : LASER_TRAVEL_MS;
   if (card && !state.reduceMotion) {
-    card.style.animationPlayState = "paused";
-    var field = $("playfield").getBoundingClientRect();
+    var box = $("problems").getBoundingClientRect();
     var cardR = card.getBoundingClientRect();
-    card.style.setProperty("--hold-y", (cardR.top - field.top - 8) + "px");
+    card.style.animation = "none";
+    card.style.top = (cardR.top - box.top) + "px";
+    card.style.left = (cardR.left - box.left) + "px";
+    card.style.transform = "none";
     var shooter = closestBuilding(cardR.left + cardR.width / 2);
     fireLaser(card, shooter);
     window.setTimeout(function () {
