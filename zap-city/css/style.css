@@ -965,3 +965,25 @@ button, input, a { font: inherit; color: inherit; }
   width: 100%;
   max-width: 320px;
 }
+
+.end-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin: 8px 0 4px;
+}
+.fact-chip.learning {
+  background: #3db8ff;
+  color: #041018;
+  -webkit-text-fill-color: #041018;
+  color-scheme: only light;
+  border-color: #111;
+}
+.fact-chip.struggle {
+  background: #ff7eb6;
+  color: #111;
+  -webkit-text-fill-color: #111;
+  color-scheme: only light;
+  border-color: #111;
+}

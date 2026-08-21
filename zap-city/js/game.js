@@ -39,6 +39,7 @@ var state = {
   inputLock: false,
   muted: false,
   asked: [],
+  waveFacts: [],
   card: null,
   fallTimer: null,
   shakeTimer: null,
@@ -690,6 +691,9 @@ function spawnProblem() {
   card.className = "falling-problem";
   card.textContent = state.current.prompt;
   box.appendChild(card);
+  if (state.current && state.waveFacts.indexOf(state.current.prompt) === -1) {
+    state.waveFacts.push(state.current.prompt);
+  }
   var skyQ = $("sky-problem");
   if (skyQ) skyQ.textContent = state.current.prompt;
 
@@ -726,6 +730,7 @@ function startRound(index) {
   state.zaps = 0;
   state.results = [];
   state.asked = [];
+  state.waveFacts = [];
   state.typed = "";
   state.locked = true;
   state.current = nextQuestion(ROUND_INFO[index].kind);
@@ -893,31 +898,21 @@ function endRound() {
 
 function factChip(prompt, status) {
   var el = document.createElement("span");
-  el.className = "fact-chip " + status;
-  el.textContent = (status === "mastered" ? "★ " : status === "struggle" ? "! " : "") + prompt;
+  var cls = status === "struggle" ? "struggle" : status === "mastered" ? "mastered" : "learning";
+  el.className = "fact-chip " + cls;
+  el.textContent = (cls === "mastered" ? "★ " : cls === "struggle" ? "! " : "") + prompt;
   return el;
 }
 
 function paintEndFacts() {
   var box = $("end-facts");
-  var banner = $("end-ready");
   if (!box) return;
   box.innerHTML = "";
-  var kind = currentKind();
   var map = loadFacts();
-  var keys = Object.keys(map).filter(function (k) { return map[k].kind === kind; }).slice(-8);
-  keys.forEach(function (k) { box.appendChild(factChip(k, factStatus(map[k]))); });
-  var stats = bandStats(kind);
-  var info = ROUND_INFO[state.roundIndex];
-  var nxt = ROUND_INFO[state.roundIndex + 1];
-  if (banner) {
-    if (stats.mastered) {
-      banner.hidden = false;
-      banner.textContent = "★ " + stats.mastered + " / " + stats.total;
-    } else {
-      banner.hidden = true;
-    }
-  }
+  (state.waveFacts || []).forEach(function (k) {
+    var row = map[k];
+    box.appendChild(factChip(k, factStatus(row)));
+  });
 }
 
 function paintFactBook() {
