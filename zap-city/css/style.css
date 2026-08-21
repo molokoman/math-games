@@ -987,10 +987,22 @@ button.fact-chip {
 
 .end-key {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  flex-wrap: nowrap;
+  gap: 6px;
   justify-content: center;
+  align-items: stretch;
+  width: 100%;
   margin: 8px 0 4px;
+}
+.end-key .fact-chip {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 36px;
+  padding: 6px 4px;
+  font-size: 0.78rem;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;
 }
 .fact-chip.learning {
   background: #3db8ff;
