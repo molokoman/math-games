@@ -50,13 +50,13 @@ var audioCtx = null;
 var cityBuildings = [];
 
 var CITY_PLAN = [
-  { h: 70, hue: "violet" },
-  { h: 88, hue: "teal" },
-  { h: 62, hue: "blue" },
-  { h: 96, hue: "gold" },
-  { h: 76, hue: "teal" },
-  { h: 84, hue: "violet" },
-  { h: 66, hue: "blue" }
+  { h: 62, hue: "violet" },
+  { h: 80, hue: "teal" },
+  { h: 54, hue: "blue" },
+  { h: 88, hue: "gold" },
+  { h: 68, hue: "teal" },
+  { h: 76, hue: "violet" },
+  { h: 58, hue: "blue" }
 ];
 
 // ---------- tiny helpers ----------
