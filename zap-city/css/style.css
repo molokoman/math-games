@@ -921,3 +921,16 @@ button, input, a { font: inherit; color: inherit; }
 #speech-game[hidden] { display: none; }
 
 .hearts, #speech-game, #speech-end, #speech-start, .pic-how { display: none !important; }
+
+.facts-key {
+  margin: 6px 0 16px;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #ffe14a;
+  letter-spacing: 0.04em;
+}
+.fact-band h3 {
+  text-transform: none;
+  letter-spacing: 0.02em;
+  font-size: 1.15rem;
+}

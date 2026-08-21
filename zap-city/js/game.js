@@ -907,7 +907,7 @@ function paintFactBook() {
     wrap.className = "fact-band";
     var h = document.createElement("h3");
     var stats = bandStats(info.kind);
-    h.textContent = chipLabel(info) + "   ★ × " + stats.mastered;
+    h.textContent = info.name + (info.range ? " " + info.range : "") + "  ·  " + stats.mastered + " mastered";
     wrap.appendChild(h);
     var row = document.createElement("div");
     row.className = "fact-row";
