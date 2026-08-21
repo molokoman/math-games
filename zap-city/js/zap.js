@@ -409,23 +409,30 @@ function playHit() {
   playHtml("hit");
 }
 
-function playZap() {
-  playHtml("zap");
+function playPew(when) {
   var ctx = ensureAudio();
   if (!ctx) return;
   try {
+    var t0 = ctx.currentTime + (when || 0);
     var osc = ctx.createOscillator();
     var gain = ctx.createGain();
     osc.type = "square";
-    osc.frequency.setValueAtTime(1400, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(90, ctx.currentTime + 0.14);
-    gain.gain.setValueAtTime(0.22, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0.0001, ctx.currentTime + 0.15);
+    osc.frequency.setValueAtTime(1400, t0);
+    osc.frequency.exponentialRampToValueAtTime(90, t0 + 0.14);
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.linearRampToValueAtTime(0.24, t0 + 0.004);
+    gain.gain.linearRampToValueAtTime(0.0001, t0 + 0.15);
     osc.connect(gain);
     gain.connect(ctx.destination);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.16);
+    osc.start(t0);
+    osc.stop(t0 + 0.16);
   } catch (e) {}
+}
+
+function playZap() {
+  playHtml("zap");
+  playPew(0);
+  playPew(0.055);
 }
 
 function playBlast() {
