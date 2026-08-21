@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#090014" />
   <title>Zap City</title>
   <link rel="icon" href="assets/zip.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="css/zap.css?v=pew1" />
+  <link rel="stylesheet" href="css/zap.css?v=facts1" />
   <!--
     Zap City — a local math game for ages ~7.
     Open this file by double-clicking it. No internet or install needed.
@@ -39,6 +39,7 @@
     <p class="pick-label">Choose a wave</p>
     <div class="round-grid" id="round-picks"></div>
 
+    <button id="btn-facts" class="btn ghost" type="button">My facts</button>
     <a href="../" class="text-link" id="link-star-quest">Star Quest</a>
   </section>
 
@@ -84,13 +85,27 @@
     <div class="end-actions">
       <button id="btn-again" class="btn primary huge" type="button">Play again</button>
       <button id="btn-next" class="btn secondary huge" type="button">Next wave</button>
+      <p id="end-ready" class="ready-banner" hidden></p>
+      <div id="end-facts" class="fact-row" aria-label="Facts from this wave"></div>
+      <button id="btn-facts-end" class="btn ghost" type="button">My facts</button>
       <button id="btn-picks" class="btn ghost" type="button">Choose a wave</button>
       <a href="../" class="text-link" id="link-star-quest-end">Star Quest</a>
     </div>
   </section>
 
+
+  <!-- FACTS -->
+  <section id="screen-facts" class="screen" aria-label="Fact book" hidden>
+    <p class="eyebrow">Fact book</p>
+    <h2 class="title small">Your facts</h2>
+    <p id="facts-blurb" class="how">Gold stars are mastered. Pink ones need more practice.</p>
+    <p id="facts-ready" class="ready-banner" hidden></p>
+    <div id="facts-bands" class="facts-bands"></div>
+    <button id="btn-facts-back" class="btn primary huge" type="button">Back</button>
+  </section>
+
   <div id="confetti" aria-hidden="true"></div>
 
-  <script src="js/zap.js?v=pew1"></script>
+  <script src="js/zap.js?v=facts1"></script>
 </body>
 </html>

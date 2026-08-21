@@ -88,6 +88,74 @@ function fallDuration() {
   return FALL_MS;
 }
 
+
+// ---------- mastery (saved on this phone, no login) ----------
+var FACTS_KEY = "zapcity-facts-v1";
+var MASTER_STREAK = 3;
+
+function loadFacts() {
+  try { return JSON.parse(localStorage.getItem(FACTS_KEY) || "{}"); }
+  catch (e) { return {}; }
+}
+function saveFacts(map) {
+  try { localStorage.setItem(FACTS_KEY, JSON.stringify(map)); } catch (e) {}
+}
+function factStatus(row) {
+  var t = (row && row.tries) || [];
+  if (!t.length) return "new";
+  var last3 = t.slice(-MASTER_STREAK);
+  if (last3.length >= MASTER_STREAK && last3.every(function (x) { return x; })) return "mastered";
+  var last2 = t.slice(-2);
+  if (last2.length >= 2 && !last2[0] && !last2[1]) return "struggle";
+  return "learning";
+}
+function recordFact(prompt, kind, ok) {
+  if (!prompt) return "new";
+  var map = loadFacts();
+  var row = map[prompt] || { kind: kind, tries: [] };
+  row.kind = kind;
+  row.tries.push(ok ? 1 : 0);
+  if (row.tries.length > 8) row.tries = row.tries.slice(-8);
+  map[prompt] = row;
+  saveFacts(map);
+  return factStatus(row);
+}
+function currentKind() {
+  return ROUND_INFO[state.roundIndex] ? ROUND_INFO[state.roundIndex].kind : "add10";
+}
+function bandStats(kind) {
+  var map = loadFacts();
+  var mastered = 0, struggle = 0, seen = 0;
+  Object.keys(map).forEach(function (k) {
+    if (map[k].kind !== kind) return;
+    seen += 1;
+    var s = factStatus(map[k]);
+    if (s === "mastered") mastered += 1;
+    if (s === "struggle") struggle += 1;
+  });
+  return {
+    seen: seen,
+    mastered: mastered,
+    struggle: struggle,
+    ready: mastered >= 5 && struggle <= 1
+  };
+}
+function strugglePool(kind) {
+  var map = loadFacts();
+  var out = [];
+  Object.keys(map).forEach(function (k) {
+    if (map[k].kind === kind && factStatus(map[k]) === "struggle") out.push(k);
+  });
+  return out;
+}
+function parsePrompt(prompt) {
+  var m = String(prompt).match(/^(\d+)\s*([+\u2212\-])\s*(\d+)$/);
+  if (!m) return null;
+  var a = Number(m[1]), b = Number(m[3]);
+  var add = m[2] === "+";
+  return { prompt: prompt, answer: add ? a + b : a - b };
+}
+
 // ---------- questions (same bands as Star Quest; no 0+n, no n−0, no negatives) ----------
 function makeAdd(maxSum, minSum) {
   minSum = minSum == null ? 4 : minSum;
@@ -105,6 +173,14 @@ function makeSub(maxMinuend, minMinuend) {
 }
 
 function nextQuestion(kind) {
+  var pool = strugglePool(kind);
+  if (pool.length && Math.random() < 0.45) {
+    var picked = parsePrompt(pick(pool));
+    if (picked && state.asked.indexOf(uniqueKey(picked)) === -1) {
+      state.asked.push(uniqueKey(picked));
+      return picked;
+    }
+  }
   var q, tries = 0;
   do {
     if (kind === "add10") q = makeAdd(10, 4);
@@ -227,7 +303,7 @@ function setMuted(on) {
 
 // ---------- screens ----------
 function showScreen(id) {
-  ["screen-start", "screen-game", "screen-end"].forEach(function (sid) {
+  ["screen-start", "screen-game", "screen-end", "screen-facts"].forEach(function (sid) {
     var el = $(sid);
     var on = sid === id;
     el.classList.toggle("active", on);
@@ -562,6 +638,7 @@ function zapCorrect() {
   clearFallTimer();
   state.zaps += 1;
   state.results.push("zap");
+  if (state.current) recordFact(state.current.prompt, currentKind(), true);
   playZap();
   flashField();
   burstConfetti();
@@ -638,6 +715,7 @@ function onCityHit() {
       };
     }(doomed), 720);
   }
+  if (state.current) recordFact(state.current.prompt, currentKind(), false);
   if (state.hearts > 0) state.hearts -= 1;
   state.results.push("miss");
   if (state.card) {
@@ -678,6 +756,88 @@ function endRound() {
   }
   say("end", msg);
   $("btn-next").hidden = state.roundIndex >= ROUND_INFO.length - 1;
+  paintEndFacts();
+}
+
+function factChip(prompt, status) {
+  var el = document.createElement("span");
+  el.className = "fact-chip " + status;
+  el.textContent = (status === "mastered" ? "★ " : status === "struggle" ? "! " : "") + prompt;
+  return el;
+}
+
+function paintEndFacts() {
+  var box = $("end-facts");
+  var banner = $("end-ready");
+  if (!box) return;
+  box.innerHTML = "";
+  var kind = currentKind();
+  var map = loadFacts();
+  var keys = Object.keys(map).filter(function (k) { return map[k].kind === kind; }).slice(-8);
+  keys.forEach(function (k) { box.appendChild(factChip(k, factStatus(map[k]))); });
+  var stats = bandStats(kind);
+  var info = ROUND_INFO[state.roundIndex];
+  var nxt = ROUND_INFO[state.roundIndex + 1];
+  if (banner) {
+    if (stats.ready && nxt) {
+      banner.hidden = false;
+      banner.textContent = "Mastered " + stats.mastered + " facts. Ready for " + nxt.name + "!";
+    } else if (stats.mastered) {
+      banner.hidden = false;
+      banner.textContent = stats.mastered + " gold-star fact" + (stats.mastered === 1 ? "" : "s") + " in " + info.name + ".";
+    } else {
+      banner.hidden = true;
+    }
+  }
+}
+
+function paintFactBook() {
+  var bands = $("facts-bands");
+  var banner = $("facts-ready");
+  if (!bands) return;
+  bands.innerHTML = "";
+  var readyBits = [];
+  ROUND_INFO.forEach(function (info, i) {
+    if (info.kind === "mix20" && i > 0 && ROUND_INFO[i - 1].kind === "mix20") return;
+    var wrap = document.createElement("div");
+    wrap.className = "fact-band";
+    var h = document.createElement("h3");
+    var stats = bandStats(info.kind);
+    h.textContent = info.name + "  ·  " + stats.mastered + " mastered";
+    wrap.appendChild(h);
+    var row = document.createElement("div");
+    row.className = "fact-row";
+    var map = loadFacts();
+    var keys = Object.keys(map).filter(function (k) { return map[k].kind === info.kind; });
+    if (!keys.length) {
+      var empty = document.createElement("p");
+      empty.className = "fact-empty";
+      empty.textContent = "Play this wave to collect facts.";
+      wrap.appendChild(empty);
+    } else {
+      keys.sort().forEach(function (k) { row.appendChild(factChip(k, factStatus(map[k]))); });
+      wrap.appendChild(row);
+    }
+    if (stats.ready) {
+      var next = ROUND_INFO[i + 1];
+      readyBits.push(info.name + (next ? (" → " + next.name) : " is solid"));
+    }
+    bands.appendChild(wrap);
+  });
+  if (banner) {
+    if (readyBits.length) {
+      banner.hidden = false;
+      banner.textContent = "Ready to move on: " + readyBits.join(". ") + ".";
+    } else {
+      banner.hidden = true;
+    }
+  }
+}
+
+function openFacts() {
+  stopFalling();
+  paintFactBook();
+  showScreen("screen-facts");
 }
 
 // ---------- pad input ----------
@@ -694,6 +854,9 @@ function onDigit(d) {
   }
   // cannot be the start of the right answer (also covers same-length wrong)
   if (target.indexOf(next) !== 0) {
+    if (next.length >= target.length && state.current) {
+      recordFact(state.current.prompt, currentKind(), false);
+    }
     shakeWrong();
   }
 }
@@ -764,6 +927,12 @@ function boot() {
     say("start", "Choose a wave — or defend the city.");
   });
   $("btn-mute").addEventListener("click", function () { setMuted(!state.muted); });
+  if ($("btn-facts")) $("btn-facts").addEventListener("click", openFacts);
+  if ($("btn-facts-end")) $("btn-facts-end").addEventListener("click", openFacts);
+  if ($("btn-facts-back")) $("btn-facts-back").addEventListener("click", function () {
+    showScreen("screen-start");
+    say("start", "Choose a wave — or defend the city.");
+  });
   document.addEventListener("keydown", onKey);
   document.addEventListener("pointerdown", function () { ensureAudio(); }, { once: true });
 

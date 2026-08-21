@@ -805,3 +805,63 @@ button, input, a { font: inherit; color: inherit; }
   .laser-beam.firing { opacity: 0; }
   .confetti-bit { animation: none; display: none; }
 }
+
+.ready-banner {
+  width: 100%;
+  max-width: 36ch;
+  margin: 8px 0 12px;
+  padding: 10px 12px;
+  background: #ffe14a;
+  color: #111;
+  -webkit-text-fill-color: #111;
+  color-scheme: only light;
+  border: 3px solid #111;
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+.fact-row {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin: 8px 0 12px;
+}
+.fact-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 10px;
+  min-height: 40px;
+  border: 2px solid rgba(46, 245, 255, 0.4);
+  background: rgba(8, 4, 20, 0.75);
+  color: #e8fbff;
+  font-weight: 800;
+  font-size: 1.05rem;
+  border-radius: 6px;
+}
+.fact-chip.mastered {
+  background: #ffe14a;
+  color: #111;
+  -webkit-text-fill-color: #111;
+  color-scheme: only light;
+  border-color: #111;
+}
+.fact-chip.struggle {
+  background: #2a0814;
+  color: #ff9ab8;
+  border-color: #ff3d8a;
+}
+.fact-chip.learning {
+  border-color: #2ef5ff;
+}
+.facts-bands { width: 100%; max-width: 520px; }
+.fact-band { margin: 0 0 18px; text-align: left; }
+.fact-band h3 {
+  color: var(--neon);
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.fact-empty { color: var(--cream-soft); font-size: 0.95rem; }
+#btn-facts { margin-top: 10px; }
