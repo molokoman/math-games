@@ -719,9 +719,9 @@ function pickFallSpeed() {
 }
 function speedMs(speed, role) {
   if (role === "saucer") return 5200;
-  if (speed === "fast") return 2500;
-  if (speed === "slow") return 4300;
-  return 3400;
+  if (speed === "fast") return 2000;
+  if (speed === "slow") return 3600;
+  return 3000;
 }
 function clearFallTimer() {
   if (state.fallTimer) {
@@ -810,18 +810,19 @@ function scheduleFill() {
 function maybeFillDrops() {
   if (!$("screen-game").classList.contains("active")) return;
   if (standingCount() <= 0) { endRound(); return; }
-  if (state.spawnedCount < QUESTIONS_PER_ROUND && liveFalls().length < 2) {
+  if (state.spawnedCount < QUESTIONS_PER_ROUND && liveFalls().length < 1) {
     spawnDrop("fall");
   }
   if (state.spawnedCount >= QUESTIONS_PER_ROUND && !liveDrops().length) {
     endRound();
     return;
   }
-  if (state.spawnedCount < QUESTIONS_PER_ROUND && liveFalls().length < 2) scheduleFill();
+  if (state.spawnedCount < QUESTIONS_PER_ROUND && liveFalls().length < 1) scheduleFill();
   maybeSaucer();
 }
 
 function maybeSaucer() {
+  return;
   if (liveDrops().some(function (d) { return d.role === "saucer"; })) return;
   if (liveFalls().length < 1) return;
   if (Math.random() > 0.28) return;
@@ -926,7 +927,6 @@ function spawnDrop(role) {
   renderHud();
   paintSkyProblems();
   setPadEnabled(true);
-  if (role === "fall") scheduleFill();
   maybeSaucer();
 }
 
