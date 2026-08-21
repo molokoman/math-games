@@ -43,7 +43,11 @@ var state = {
   card: null,
   fallTimer: null,
   shakeTimer: null,
-  reduceMotion: false
+  reduceMotion: false,
+  drops: [],
+  spawnedCount: 0,
+  fillTimer: null,
+  saucerTimer: null
 };
 
 var audioCtx = null;
@@ -679,14 +683,63 @@ function renderTyped() {
 }
 
 // ---------- fall / laser ----------
+function liveDrops() {
+  return (state.drops || []).filter(function (d) { return d && !d.done; });
+}
+function liveFalls() {
+  return liveDrops().filter(function (d) { return d.role === "fall"; });
+}
+function paintSkyProblems() {
+  var el = $("sky-problem");
+  if (!el) return;
+  var parts = liveDrops().map(function (d) { return d.q.prompt; });
+  el.textContent = parts.length ? parts.join("   ") : "";
+}
+function answerTaken(ans) {
+  var s = String(ans);
+  return liveDrops().some(function (d) { return String(d.q.answer) === s; });
+}
+function pickUniqueQuestion() {
+  var q, tries = 0;
+  do {
+    q = nextQuestion(ROUND_INFO[state.roundIndex].kind);
+    tries++;
+  } while (tries < 24 && answerTaken(q.answer));
+  return q;
+}
+function pickFallSpeed() {
+  var wave = ROUND_INFO[state.roundIndex].fall;
+  var hasFast = liveFalls().some(function (d) { return d.speed === "fast"; });
+  if (wave === "slow") return "slow";
+  if (hasFast) return Math.random() < 0.55 ? "slow" : "norm";
+  if (Math.random() < 0.22) return "fast";
+  if (Math.random() < 0.4) return "slow";
+  return "norm";
+}
+function speedMs(speed, role) {
+  if (role === "saucer") return 5200;
+  if (speed === "fast") return 2500;
+  if (speed === "slow") return 4300;
+  return 3400;
+}
 function clearFallTimer() {
   if (state.fallTimer) {
     clearTimeout(state.fallTimer);
     state.fallTimer = null;
   }
-  if (state.card) {
-    state.card.removeEventListener("animationend", onFallEnd);
+  if (state.fillTimer) {
+    clearTimeout(state.fillTimer);
+    state.fillTimer = null;
   }
+  if (state.saucerTimer) {
+    clearTimeout(state.saucerTimer);
+    state.saucerTimer = null;
+  }
+  (state.drops || []).forEach(function (d) {
+    if (d.timer) clearTimeout(d.timer);
+    if (d.wrap) d.wrap.removeEventListener("animationend", d.onEnd);
+    if (d.card) d.card.removeEventListener("animationend", onFallEnd);
+  });
 }
 
 function clearLaser() {
@@ -704,6 +757,7 @@ function clearLaser() {
 function stopFalling() {
   clearFallTimer();
   $("problems").innerHTML = "";
+  state.drops = [];
   state.card = null;
   clearLaser();
   $("city").classList.remove("bonk");
@@ -711,7 +765,6 @@ function stopFalling() {
 
 function onFallEnd(e) {
   if (e && e.animationName && e.animationName !== "problem-fall") return;
-  onCityHit();
 }
 
 function fireLaser(card, building) {
@@ -745,56 +798,135 @@ function fireLaser(card, building) {
   building.classList.add("firing");
 }
 
+function scheduleFill() {
+  if (state.fillTimer) clearTimeout(state.fillTimer);
+  state.fillTimer = window.setTimeout(function () {
+    state.fillTimer = null;
+    maybeFillDrops();
+  }, rand(850, 1400));
+}
+
+function maybeFillDrops() {
+  if (!$("screen-game").classList.contains("active")) return;
+  if (standingCount() <= 0) { endRound(); return; }
+  if (state.spawnedCount < QUESTIONS_PER_ROUND && liveFalls().length < 2) {
+    spawnDrop("fall");
+  }
+  if (state.spawnedCount >= QUESTIONS_PER_ROUND && !liveDrops().length) {
+    endRound();
+    return;
+  }
+  if (state.spawnedCount < QUESTIONS_PER_ROUND && liveFalls().length < 2) scheduleFill();
+  maybeSaucer();
+}
+
+function maybeSaucer() {
+  if (liveDrops().some(function (d) { return d.role === "saucer"; })) return;
+  if (liveFalls().length < 1) return;
+  if (Math.random() > 0.28) return;
+  if (state.saucerTimer) return;
+  state.saucerTimer = window.setTimeout(function () {
+    state.saucerTimer = null;
+    if (!$("screen-game").classList.contains("active")) return;
+    if (liveFalls().length < 1) return;
+    if (liveDrops().some(function (d) { return d.role === "saucer"; })) return;
+    spawnDrop("saucer");
+  }, rand(700, 1500));
+}
+
 function spawnProblem() {
-  state.typed = "";
-  state.locked = false;
-  state.inputLock = false;
-  renderTyped();
-  renderHud();
-  setPadEnabled(true);
-  clearLaser();
-  $("city").classList.remove("bonk");
+  spawnDrop("fall");
+}
+
+function spawnDrop(role) {
+  var q = pickUniqueQuestion();
+  var speed = role === "saucer" ? "slow" : pickFallSpeed();
+  var ms = speedMs(speed, role);
+  if (role === "fall") state.spawnedCount += 1;
+  state.qIndex = Math.max(0, state.spawnedCount - 1);
+  state.current = q;
+  if (q && state.waveFacts.indexOf(q.prompt) === -1) state.waveFacts.push(q.prompt);
 
   var box = $("problems");
-  box.innerHTML = "";
-  var card = document.createElement("div");
-  card.className = "falling-problem";
-  card.style.animation = "none";
-  card.textContent = state.current.prompt;
-  box.appendChild(card);
-  if (state.current && state.waveFacts.indexOf(state.current.prompt) === -1) {
-    state.waveFacts.push(state.current.prompt);
-  }
-  var skyQ = $("sky-problem");
-  if (skyQ) skyQ.textContent = state.current.prompt;
-
   var field = $("playfield");
-  var maxLeft = Math.max(8, field.clientWidth - card.offsetWidth - 8);
-  card.style.left = rand(8, maxLeft) + "px";
-  var fieldR = field.getBoundingClientRect();
-  var cardR = card.getBoundingClientRect();
-  var roofB = closestBuilding(cardR.left + cardR.width / 2);
-  var body = roofB && roofB.querySelector(".b-body");
-  var roofTop = body ? body.getBoundingClientRect().top : ($("city").getBoundingClientRect().bottom - 10);
-  var dist = roofTop - cardR.top - card.offsetHeight + 6;
-  if (dist < field.clientHeight * 0.55) dist = field.clientHeight - ($("city").offsetHeight || 80) - card.offsetHeight + 18;
-  if (dist < 80) dist = 80;
-  card.style.setProperty("--fall-distance", dist + "px");
-  state.card = card;
-
-  var ms = fallDuration();
-  if (state.reduceMotion) {
-    card.style.transform = "translate3d(0, " + Math.round(dist) + "px, 0)";
-    state.fallTimer = window.setTimeout(function () { onCityHit(); }, ms);
+  var wrap;
+  var card;
+  if (role === "saucer") {
+    wrap = document.createElement("div");
+    wrap.className = "saucer";
+    wrap.innerHTML = '<div class="saucer-dome"></div><div class="saucer-body"></div>';
+    card = document.createElement("div");
+    card.className = "falling-problem saucer-fact";
+    card.textContent = q.prompt;
+    wrap.appendChild(card);
+    box.appendChild(wrap);
+    var fly = (field.clientWidth || 320) + 140;
+    wrap.style.left = "-90px";
+    wrap.style.top = rand(8, 26) + "%";
+    wrap.style.setProperty("--fly-x", fly + "px");
+    wrap.style.animationDuration = ms + "ms";
   } else {
-    void card.offsetWidth;
-    card.style.animation = "";
-    card.style.animationDuration = ms + "ms";
-    card.addEventListener("animationend", onFallEnd);
+    card = document.createElement("div");
+    card.className = "falling-problem";
+    card.style.animation = "none";
+    card.textContent = q.prompt;
+    box.appendChild(card);
+    wrap = card;
+    var maxLeft = Math.max(8, field.clientWidth - card.offsetWidth - 8);
+    var left = rand(8, maxLeft);
+    liveFalls().forEach(function (d) {
+      var x = parseFloat(d.card.style.left) || 0;
+      if (Math.abs(x - left) < 72) left = Math.min(maxLeft, Math.max(8, x + (x < maxLeft / 2 ? 92 : -92)));
+    });
+    card.style.left = left + "px";
+    var cardR = card.getBoundingClientRect();
+    var roofB = closestBuilding(cardR.left + cardR.width / 2);
+    var body = roofB && roofB.querySelector(".b-body");
+    var roofTop = body ? body.getBoundingClientRect().top : ($("city").getBoundingClientRect().bottom - 10);
+    var dist = roofTop - cardR.top - card.offsetHeight + 6;
+    if (dist < field.clientHeight * 0.55) dist = field.clientHeight - ($("city").offsetHeight || 80) - card.offsetHeight + 18;
+    if (dist < 80) dist = 80;
+    card.style.setProperty("--fall-distance", dist + "px");
+    if (state.reduceMotion) {
+      card.style.transform = "translate3d(0, " + Math.round(dist) + "px, 0)";
+    } else {
+      void card.offsetWidth;
+      card.style.animation = "";
+      card.style.animationDuration = ms + "ms";
+    }
   }
 
-  setZipMood("think");
-  say("game", "");
+  var drop = { role: role, q: q, card: card, wrap: wrap, speed: speed, ms: ms, done: false, timer: null, onEnd: null };
+  drop.onEnd = function (e) {
+    if (drop.done) return;
+    if (role === "fall") {
+      if (e && e.animationName && e.animationName !== "problem-fall") return;
+      hitDrop(drop);
+    } else {
+      if (e && e.animationName && e.animationName !== "saucer-fly") return;
+      drop.done = true;
+      if (wrap.parentNode) wrap.remove();
+      paintSkyProblems();
+      maybeFillDrops();
+    }
+  };
+  wrap.addEventListener("animationend", drop.onEnd);
+  if (state.reduceMotion) {
+    drop.timer = window.setTimeout(function () { drop.onEnd({}); }, ms);
+  }
+  var first = !liveDrops().length;
+  state.drops.push(drop);
+  state.card = card;
+  state.locked = false;
+  if (first) {
+    state.typed = "";
+    renderTyped();
+  }
+  renderHud();
+  paintSkyProblems();
+  setPadEnabled(true);
+  if (role === "fall") scheduleFill();
+  maybeSaucer();
 }
 
 function startRound(index) {
@@ -815,8 +947,10 @@ function startRound(index) {
   renderHud();
   renderTyped();
   // two frames so the playfield has a real height before we measure the fall
+  state.drops = [];
+  state.spawnedCount = 0;
   requestAnimationFrame(function () {
-    requestAnimationFrame(spawnProblem);
+    requestAnimationFrame(function () { spawnDrop("fall"); });
   });
 }
 
@@ -836,42 +970,106 @@ function burstConfetti() {
 }
 
 function zapCorrect() {
-  if (state.locked) return;
-  state.locked = true;
-  setPadEnabled(false);
-  clearFallTimer();
-  state.zaps += 1;
+  var live = liveDrops();
+  if (!live.length) return;
+  zapDrop(live[0]);
+}
+
+function zapDrop(drop) {
+  if (!drop || drop.done) return;
+  drop.done = true;
+  if (drop.timer) { clearTimeout(drop.timer); drop.timer = null; }
+  if (drop.wrap) drop.wrap.removeEventListener("animationend", drop.onEnd);
+  state.zaps += drop.role === "saucer" ? 2 : 1;
   state.results.push("zap");
-  if (state.current) recordFact(state.current.prompt, currentKind(), true);
+  recordFact(drop.q.prompt, currentKind(), true);
   playZap();
   flashField();
   burstConfetti();
   setZipMood("yay");
-  say("game", "");
+  state.typed = "";
+  renderTyped();
   renderHud();
+  paintSkyProblems();
 
-  var card = state.card;
+  var card = drop.card;
   var travel = state.reduceMotion ? 80 : LASER_TRAVEL_MS;
   if (card && !state.reduceMotion) {
     var box = $("problems").getBoundingClientRect();
     var cardR = card.getBoundingClientRect();
     card.style.animation = "none";
-    card.style.top = (cardR.top - box.top) + "px";
-    card.style.left = (cardR.left - box.left) + "px";
-    card.style.transform = "none";
-    var shooter = closestBuilding(cardR.left + cardR.width / 2);
-    fireLaser(card, shooter);
+    if (drop.role === "fall") {
+      card.style.top = (cardR.top - box.top) + "px";
+      card.style.left = (cardR.left - box.left) + "px";
+      card.style.transform = "none";
+    }
+    fireLaser(card, closestBuilding(cardR.left + cardR.width / 2));
     window.setTimeout(function () {
       playBlast();
-      if (state.card === card) card.classList.add("pop");
+      card.classList.add("pop");
       clearLaser();
     }, travel);
   } else if (card) {
     playBlast();
     card.classList.add("pop");
   }
+  window.setTimeout(function () {
+    if (drop.wrap && drop.wrap.parentNode) drop.wrap.remove();
+    else if (card && card.parentNode) card.remove();
+    maybeFillDrops();
+  }, travel + POP_MS + 80);
+}
 
-  window.setTimeout(advance, travel + POP_MS + NEXT_PAUSE_MS);
+function hitDrop(drop) {
+  if (!drop || drop.done) return;
+  drop.done = true;
+  if (drop.timer) { clearTimeout(drop.timer); drop.timer = null; }
+  playHit();
+  setZipMood("oops");
+  var city = $("city");
+  city.classList.remove("bonk");
+  void city.offsetWidth;
+  city.classList.add("bonk");
+  var hitX = drop.card ? (drop.card.getBoundingClientRect().left + drop.card.offsetWidth / 2) : 0;
+  var doomed = closestBuilding(hitX);
+  if (doomed) {
+    doomed.classList.remove("explode");
+    void doomed.offsetWidth;
+    doomed.classList.add("explode");
+    boomBits(doomed);
+    window.setTimeout(function (b) {
+      return function () {
+        b.classList.remove("explode", "firing");
+        b.classList.add("wrecked");
+      };
+    }(doomed), 720);
+  }
+  recordFact(drop.q.prompt, currentKind(), false);
+  state.results.push("miss");
+  if (drop.card) {
+    drop.card.classList.remove("shake");
+    void drop.card.offsetWidth;
+    drop.card.classList.add("shake");
+  }
+  renderHud();
+  paintSkyProblems();
+  var left = standingCount();
+  if (doomed && !doomed.classList.contains("wrecked")) left -= 1;
+  window.setTimeout(function () {
+    if (drop.wrap && drop.wrap.parentNode) drop.wrap.remove();
+    else if (drop.card && drop.card.parentNode) drop.card.remove();
+    if (left <= 0) endRound();
+    else maybeFillDrops();
+  }, 420);
+}
+
+function onCityHit() {
+  var falling = liveFalls()[0];
+  if (falling) hitDrop(falling);
+}
+
+function advance() {
+  maybeFillDrops();
 }
 
 
@@ -896,58 +1094,6 @@ function boomBits(building) {
     field.appendChild(el);
     window.setTimeout(function (n) { return function () { n.remove(); }; }(el), 820);
   }
-}
-
-function onCityHit() {
-  if (state.locked) return;
-  state.locked = true;
-  setPadEnabled(false);
-  clearFallTimer();
-  playHit();
-  setZipMood("oops");
-  var city = $("city");
-  city.classList.remove("bonk");
-  void city.offsetWidth;
-  city.classList.add("bonk");
-  var hitX = state.card ? (state.card.getBoundingClientRect().left + state.card.offsetWidth / 2) : 0;
-  var doomed = closestBuilding(hitX);
-  if (doomed) {
-    doomed.classList.remove("explode");
-    void doomed.offsetWidth;
-    doomed.classList.add("explode");
-    boomBits(doomed);
-    window.setTimeout(function (b) {
-      return function () {
-        b.classList.remove("explode", "firing");
-        b.classList.add("wrecked");
-      };
-    }(doomed), 720);
-  }
-  if (state.current) recordFact(state.current.prompt, currentKind(), false);
-  state.results.push("miss");
-  if (state.card) {
-    state.card.classList.remove("shake");
-    void state.card.offsetWidth;
-    state.card.classList.add("shake");
-  }
-  renderHud();
-  var left = standingCount();
-  if (doomed && !doomed.classList.contains("wrecked")) left -= 1;
-  window.setTimeout(function () {
-    if (left <= 0) endRound();
-    else advance();
-  }, HIT_PAUSE_MS);
-}
-
-function advance() {
-  stopFalling();
-  state.qIndex += 1;
-  if (state.qIndex >= QUESTIONS_PER_ROUND || standingCount() <= 0) {
-    endRound();
-    return;
-  }
-  state.current = nextQuestion(ROUND_INFO[state.roundIndex].kind);
-  spawnProblem();
 }
 
 function paintEndCity() {
@@ -1023,23 +1169,20 @@ function openFacts(from) {
 
 // ---------- pad input ----------
 function onDigit(d) {
-  if (state.locked || state.inputLock || !state.current) return;
+  if (state.inputLock) return;
   if (!$("screen-game").classList.contains("active")) return;
+  var live = liveDrops();
+  if (!live.length) return;
   var next = state.typed + d;
-  var target = String(state.current.answer);
   state.typed = next;
   renderTyped();
-  if (next === target) {
-    zapCorrect();
+  var exact = live.filter(function (drop) { return String(drop.q.answer) === next; });
+  if (exact.length) {
+    zapDrop(exact[0]);
     return;
   }
-  // cannot be the start of the right answer (also covers same-length wrong)
-  if (target.indexOf(next) !== 0) {
-    if (next.length >= target.length && state.current) {
-      recordFact(state.current.prompt, currentKind(), false);
-    }
-    shakeWrong();
-  }
+  var prefix = live.filter(function (drop) { return String(drop.q.answer).indexOf(next) === 0; });
+  if (!prefix.length) shakeWrong();
 }
 
 function onBackspace() {
