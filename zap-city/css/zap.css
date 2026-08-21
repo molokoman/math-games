@@ -1822,3 +1822,14 @@ button.fact-chip {
 #screen-end > .end-mastery { order: 2 !important; margin: 0 0 12px !important; }
 #screen-end > .intro-city { order: 3 !important; margin-top: 4px !important; margin-bottom: 16px !important; }
 #screen-end > .end-actions { order: 4 !important; margin-top: auto; padding-bottom: 12px; }
+
+
+#screen-end {
+  padding-top: calc(36px + env(safe-area-inset-top, 0px)) !important;
+  padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px)) !important;
+  justify-content: space-evenly !important;
+}
+#screen-end > .end-zaps { margin: 0 64px !important; }
+#screen-end > .end-mastery { margin: 0 !important; }
+#screen-end > .intro-city { margin: 0 !important; }
+#screen-end > .end-actions { margin-top: 0 !important; padding-bottom: 0; }
