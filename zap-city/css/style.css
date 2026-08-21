@@ -956,7 +956,9 @@ button.fact-chip {
   max-width: 320px;
 }
 
-#screen-picks,
+#screen-picks {
+  padding-top: calc(76px + env(safe-area-inset-top, 0px));
+}
 #screen-facts {
   padding-top: calc(12px + env(safe-area-inset-top, 0px));
 }
