@@ -237,7 +237,7 @@ function paintSky() {
 function renderHearts() {
   var html = "";
   for (var i = 0; i < STARTING_HEARTS; i++) {
-    html += '<span class="' + (i < state.hearts ? "" : "lost") + '" aria-hidden="true">❤️</span>';
+    html += '<span class="heart' + (i < state.hearts ? "" : " lost") + '" aria-hidden="true">♥</span>';
   }
   $("hearts").innerHTML = html;
   $("hearts").setAttribute("aria-label", state.hearts + " hearts left");
@@ -465,6 +465,13 @@ function onKey(e) {
   }
 }
 
+function paintTimerLabel() {
+  var on = $("toggle-timer").checked;
+  $("timer-label").textContent = on
+    ? "Timer (on — " + TIMER_SECONDS + " seconds)"
+    : "Timer (off — no rush!)";
+}
+
 // ---------- boot ----------
 function boot() {
   paintSky();
@@ -481,8 +488,10 @@ function boot() {
   });
   $("btn-mute").addEventListener("click", function () { setMuted(!state.muted); });
   $("toggle-timer").checked = TIMER_DEFAULT_ON;
+  paintTimerLabel();
   $("toggle-timer").addEventListener("change", function (e) {
     state.timerOn = e.target.checked;
+    paintTimerLabel();
   });
   document.addEventListener("keydown", onKey);
   document.addEventListener("pointerdown", function () { ensureAudio(); }, { once: true });
