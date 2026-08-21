@@ -1959,3 +1959,8 @@ button.fact-chip {
 #screen-end.end-scooch > .end-mastery {
   margin-bottom: 0 !important;
 }
+
+
+#screen-end.end-scooch > .end-actions {
+  margin-top: 22px !important;
+}
