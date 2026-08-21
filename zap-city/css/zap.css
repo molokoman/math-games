@@ -1592,3 +1592,47 @@ button.fact-chip {
   flex: 1 1 auto;
   min-height: 0;
 }
+
+
+#screen-end .end-zaps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 10px 0 4px;
+  color: #ffe14a;
+  text-shadow: none;
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+#screen-end .end-zaps .ico-zap {
+  width: 28px;
+  height: 28px;
+  display: block;
+  fill: #090014;
+  stroke: #ffe14a;
+  stroke-width: 2;
+  stroke-linejoin: miter;
+  stroke-linecap: square;
+}
+#screen-end .end-zaps .ico-zap path {
+  fill: #090014;
+  stroke: #ffe14a;
+  stroke-width: 2;
+}
+#end-facts.fact-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  justify-content: stretch;
+  width: 100%;
+}
+#end-facts .fact-chip {
+  width: 100%;
+  min-width: 0;
+  justify-content: center;
+  text-align: center;
+  padding: 6px 2px;
+  font-size: 0.78rem;
+  box-sizing: border-box;
+}

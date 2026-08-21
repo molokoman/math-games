@@ -1098,7 +1098,7 @@ function endRound() {
   var n = $("end-zaps-n");
   if (n) n.textContent = String(earned);
   var wrap = $("end-zaps");
-  if (wrap) wrap.setAttribute("aria-label", earned + " zaps this wave");
+  if (wrap) wrap.setAttribute("aria-label", "You zapped " + earned);
   paintEndCity();
   paintEndFacts();
 }
