@@ -1740,3 +1740,22 @@ button.fact-chip {
 #screen-end #end-key.end-key {
   margin-top: 4px;
 }
+
+
+#screen-end {
+  padding-top: calc(72px + env(safe-area-inset-top, 0px));
+  justify-content: flex-start;
+  gap: 0;
+}
+#screen-end .end-zaps {
+  margin: 4px 0 14px;
+  flex-shrink: 0;
+}
+#screen-end .intro-city.mini {
+  margin-top: 0;
+  margin-bottom: 18px;
+  flex-shrink: 0;
+}
+#screen-end .end-actions {
+  margin-top: 0;
+}
