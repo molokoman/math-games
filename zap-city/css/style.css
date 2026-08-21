@@ -1676,3 +1676,21 @@ button.fact-chip {
   height: 4px;
   max-height: 4px;
 }
+
+
+#screen-end {
+  padding-top: calc(108px + env(safe-area-inset-top, 0px));
+}
+#screen-end .intro-city.mini {
+  height: 148px;
+  margin: 12px 0 8px;
+  border-bottom: 2px solid #2ef5ff;
+}
+#screen-end .intro-city .ground {
+  border-top: none !important;
+  height: 6px;
+}
+#screen-end .intro-city .buildings {
+  top: 6px;
+  bottom: 6px;
+}
