@@ -220,7 +220,74 @@ function isMasteredPrompt(prompt, kind) {
   return !!(row && row.kind === kind && factStatus(row) === "mastered");
 }
 
-// ---------- audio (Web Audio beeps — no files) ----------
+// ---------- audio: HTML wav (iPhone) + Web Audio backup ----------
+var htmlSounds = {};
+
+function writeWav(seconds, sampleFn) {
+  var rate = 22050;
+  var n = Math.floor(rate * seconds);
+  var bytes = new Uint8Array(44 + n * 2);
+  var v = new DataView(bytes.buffer);
+  function str(at, s) { for (var i = 0; i < s.length; i++) bytes[at + i] = s.charCodeAt(i); }
+  str(0, "RIFF"); v.setUint32(4, 36 + n * 2, true); str(8, "WAVE");
+  str(12, "fmt "); v.setUint32(16, 16, true); v.setUint16(20, 1, true);
+  v.setUint16(22, 1, true); v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true);
+  v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  str(36, "data"); v.setUint32(40, n * 2, true);
+  for (var i = 0; i < n; i++) {
+    var s = sampleFn(i / rate, i, n);
+    if (s > 1) s = 1; if (s < -1) s = -1;
+    v.setInt16(44 + i * 2, s * 32000, true);
+  }
+  return URL.createObjectURL(new Blob([bytes], { type: "audio/wav" }));
+}
+
+function makeSound(seconds, sampleFn) {
+  var a = new Audio();
+  a.preload = "auto";
+  a.src = writeWav(seconds, sampleFn);
+  a.setAttribute("playsinline", "true");
+  return a;
+}
+
+function buildSounds() {
+  if (htmlSounds.zap) return;
+  htmlSounds.zap = makeSound(0.52, function (t) {
+    var env = Math.max(0, 1 - t / 0.52);
+    var f = 1500 - t * 2000;
+    return Math.sin(t * f * 6.283) * 0.7 * env + ((t * 90) % 2 - 1) * 0.22 * env;
+  });
+  htmlSounds.blast = makeSound(0.34, function (t, i) {
+    var env = Math.exp(-t * 8);
+    var rumble = Math.sin(t * 70 * 6.283) * 0.55;
+    var crack = ((i * 16807) % 1000) / 500 - 1;
+    return (rumble + crack * 0.5) * env;
+  });
+  htmlSounds.hit = makeSound(0.4, function (t, i) {
+    var env = Math.exp(-t * 6);
+    return (Math.sin(t * 55 * 6.283) * 0.6 + (((i * 48271) % 1000) / 500 - 1) * 0.35) * env;
+  });
+  htmlSounds.wrong = makeSound(0.16, function (t) {
+    var env = Math.max(0, 1 - t / 0.16);
+    return Math.sin(t * (240 - t * 700) * 6.283) * 0.35 * env;
+  });
+}
+
+function playHtml(name) {
+  if (state.muted) return;
+  buildSounds();
+  var a = htmlSounds[name];
+  if (!a) return;
+  try {
+    a.muted = false;
+    a.volume = 1;
+    a.pause();
+    a.currentTime = 0;
+    var p = a.play();
+    if (p && p.catch) p.catch(function () {});
+  } catch (e) {}
+}
+
 function ensureAudio() {
   if (state.muted) return null;
   try {
@@ -234,90 +301,76 @@ function ensureAudio() {
   }
 }
 
-function beep(freq, dur, type, when, vol) {
-  var ctx = ensureAudio();
-  if (!ctx) return;
-  var osc = ctx.createOscillator();
-  var gain = ctx.createGain();
-  osc.type = type || "sine";
-  osc.frequency.value = freq;
-  gain.gain.setValueAtTime(0.0001, ctx.currentTime + when);
-  gain.gain.exponentialRampToValueAtTime(vol || 0.16, ctx.currentTime + when + 0.02);
-  gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + when + dur);
-  osc.connect(gain);
-  gain.connect(ctx.destination);
-  osc.start(ctx.currentTime + when);
-  osc.stop(ctx.currentTime + when + dur + 0.02);
+function unlockAudio() {
+  buildSounds();
+  try {
+    var ctx = null;
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (AC) {
+      if (!audioCtx) audioCtx = new AC();
+      ctx = audioCtx;
+      if (ctx.state === "suspended") ctx.resume();
+    }
+  } catch (e) {}
+  ["zap", "blast", "hit", "wrong"].forEach(function (n) {
+    var a = htmlSounds[n];
+    if (!a) return;
+    try {
+      a.muted = true;
+      var p = a.play();
+      if (p && p.then) {
+        p.then(function () {
+          a.pause();
+          a.currentTime = 0;
+          a.muted = false;
+        }).catch(function () { a.muted = false; });
+      } else {
+        a.pause();
+        a.currentTime = 0;
+        a.muted = false;
+      }
+    } catch (err) { a.muted = false; }
+  });
 }
 
-function sweep(from, to, dur, type, when, vol) {
+function tone(freq, dur, type, vol) {
   var ctx = ensureAudio();
   if (!ctx) return;
-  var t = ctx.currentTime + (when || 0);
-  var osc = ctx.createOscillator();
-  var gain = ctx.createGain();
-  osc.type = type || "sawtooth";
-  osc.frequency.setValueAtTime(from, t);
-  osc.frequency.exponentialRampToValueAtTime(Math.max(40, to), t + dur);
-  gain.gain.setValueAtTime(0.0001, t);
-  gain.gain.exponentialRampToValueAtTime(vol, t + 0.012);
-  gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-  osc.connect(gain);
-  gain.connect(ctx.destination);
-  osc.start(t);
-  osc.stop(t + dur + 0.02);
-}
-
-function noiseBurst(dur, when, vol, filterType, freq) {
-  var ctx = ensureAudio();
-  if (!ctx) return;
-  var n = Math.max(1, Math.floor(ctx.sampleRate * dur));
-  var buf = ctx.createBuffer(1, n, ctx.sampleRate);
-  var data = buf.getChannelData(0);
-  for (var i = 0; i < n; i++) data[i] = Math.random() * 2 - 1;
-  var src = ctx.createBufferSource();
-  src.buffer = buf;
-  var filter = ctx.createBiquadFilter();
-  filter.type = filterType || "lowpass";
-  filter.frequency.value = freq || 800;
-  var gain = ctx.createGain();
-  var t = ctx.currentTime + (when || 0);
-  gain.gain.setValueAtTime(vol, t);
-  gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-  src.connect(filter);
-  filter.connect(gain);
-  gain.connect(ctx.destination);
-  src.start(t);
-  src.stop(t + dur + 0.02);
+  try {
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.type = type || "square";
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    gain.gain.setValueAtTime(vol || 0.28, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.0001, ctx.currentTime + dur);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + dur + 0.02);
+  } catch (e) {}
 }
 
 function playWrong() {
-  try { sweep(280, 90, 0.18, "square", 0, 0.16); } catch (e) {}
+  playHtml("wrong");
+  tone(220, 0.16, "square", 0.22);
 }
 
 function playHit() {
-  try { beep(90, 0.18, "square", 0, 0.34); } catch (e) {}
-  try { beep(48, 0.4, "sine", 0, 0.32); } catch (e) {}
-  try { sweep(180, 40, 0.28, "sawtooth", 0, 0.3); } catch (e) {}
-  try { noiseBurst(0.28, 0, 0.42, "lowpass", 420); } catch (e) {}
-  try { noiseBurst(0.1, 0, 0.22, "lowpass", 700); } catch (e) {}
+  playHtml("hit");
+  tone(90, 0.28, "square", 0.36);
+  tone(48, 0.4, "sine", 0.32);
 }
 
 function playZap() {
-  var dur = Math.max(0.35, LASER_TRAVEL_MS / 1000);
-  try { sweep(1400, 380, dur, "sawtooth", 0, 0.48); } catch (e) {}
-  try { sweep(2200, 620, dur, "square", 0, 0.32); } catch (e) {}
-  try { beep(980, dur, "sawtooth", 0, 0.26); } catch (e) {}
-  try { noiseBurst(dur, 0, 0.4, "bandpass", 2200); } catch (e) {}
-  try { noiseBurst(dur * 0.85, 0.03, 0.22, "highpass", 1400); } catch (e) {}
+  playHtml("zap");
+  tone(1100, 0.5, "sawtooth", 0.4);
+  tone(620, 0.5, "square", 0.22);
 }
 
 function playBlast() {
-  try { noiseBurst(0.26, 0, 0.55, "lowpass", 800); } catch (e) {}
-  try { noiseBurst(0.12, 0, 0.4, "highpass", 1800); } catch (e) {}
-  try { sweep(380, 48, 0.32, "sawtooth", 0, 0.42); } catch (e) {}
-  try { beep(62, 0.34, "sine", 0, 0.4); } catch (e) {}
-  try { beep(160, 0.1, "square", 0, 0.24); } catch (e) {}
+  playHtml("blast");
+  tone(70, 0.32, "sine", 0.42);
+  tone(180, 0.12, "square", 0.28);
 }
 
 function flashField() {
@@ -639,6 +692,7 @@ function spawnProblem() {
 }
 
 function startRound(index) {
+  unlockAudio();
   stopFalling();
   state.roundIndex = index;
   state.qIndex = 0;
@@ -980,11 +1034,11 @@ function boot() {
     say("start", "");
   });
   document.addEventListener("keydown", onKey);
-  document.addEventListener("pointerdown", function () { ensureAudio(); }, { once: true });
-
-  try {
-    if (localStorage.getItem("zapcity-muted") === "1") setMuted(true);
-  } catch (e) {}
+  document.addEventListener("pointerdown", unlockAudio, true);
+  document.addEventListener("touchstart", unlockAudio, true);
+  $("btn-start").addEventListener("click", function () { unlockAudio(); playZap(); });
+  try { localStorage.removeItem("zapcity-muted"); } catch (e) {}
+  setMuted(false);
 
   var params = new URLSearchParams(window.location.search);
   var shot = params.get("shot");
