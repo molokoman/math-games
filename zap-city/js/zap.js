@@ -271,19 +271,28 @@ function noise01(i, seed) {
   return (x - Math.floor(x)) * 2 - 1;
 }
 
-function crashFn(kind) {
-  var brown = 0;
+function atariBoomFn(kind) {
+  // 4-bit poly like the Atari TIA (Missile Command / Asteroids boom)
+  var reg = 9;
+  var hold = 1;
+  var left = 0;
+  var drop = kind === "hit" ? 1.7 : 1.35;
+  var fade = kind === "hit" ? 4.2 : 6.4;
   return function (t, i) {
-    var white = noise01(i, 1);
-    var grit = noise01(i, 7);
-    brown += white * 0.06;
-    brown *= 0.97;
-    var click = t < 0.016 ? (white > 0 ? 1 : -1) * (1 - t / 0.016) : 0;
-    var shatter = (white * 0.65 + grit * 0.45) * Math.exp(-t * 11);
-    var rumble = brown * Math.exp(-t * 3.1) * 1.35;
-    var wood = grit * Math.exp(-t * 6.5) * (t > 0.02 ? 0.55 : 0.15);
-    var extra = kind === "hit" ? rumble * 0.25 : 0;
-    return click * 0.98 + shatter * 0.85 + rumble + wood + extra;
+    var period = 1 + Math.floor(Math.pow(Math.min(1, t * 1.8), drop) * 52);
+    if (left <= 0) {
+      var bit = (reg ^ (reg >> 1)) & 1;
+      reg = ((reg >> 1) | (bit << 3)) & 15;
+      if (!reg) reg = 1;
+      hold = (reg & 1) ? 1 : -1;
+      left = period;
+    }
+    left--;
+    var env = Math.exp(-t * fade);
+    var crack = t < 0.012 ? ((i & 2) ? 1 : -1) * (1 - t / 0.012) * 0.85 : 0;
+    var thumpF = 120 * Math.pow(36 / 120, Math.min(1, t / 0.2));
+    var thump = (Math.sin(t * thumpF * 6.283) >= 0 ? 1 : -1) * Math.exp(-t * 8.5) * 0.38;
+    return hold * env * 0.9 + crack + thump;
   };
 }
 
@@ -299,16 +308,17 @@ function buildSounds() {
       return sq * env * 0.72;
     });
   })();
-  htmlSounds.blast = makeSound(0.72, crashFn("blast"));
-  htmlSounds.hit = makeSound(0.72, crashFn("hit"));
+  htmlSounds.blast = makeSound(0.32, atariBoomFn("blast"));
+  htmlSounds.hit = makeSound(0.52, atariBoomFn("hit"));
   htmlSounds.wrong = makeSound(0.16, function (t) {
     var env = Math.max(0, 1 - t / 0.16);
     return Math.sin(t * (240 - t * 700) * 6.283) * 0.35 * env;
   });
-  htmlSounds.click = makeSound(0.045, function (t) {
-    var env = Math.exp(-t * 55);
-    var sq = Math.sin(t * 980 * 6.283) >= 0 ? 1 : -1;
-    return sq * env * 0.32;
+  htmlSounds.click = makeSound(0.07, function (t) {
+    var f = t < 0.028 ? 1320 : 880;
+    var env = Math.exp(-t * 36);
+    var sq = Math.sin(t * f * 6.283) >= 0 ? 1 : -1;
+    return sq * env * 0.46;
   });
 }
 
@@ -1029,10 +1039,14 @@ function onKey(e) {
   if (!$("screen-game").classList.contains("active")) return;
   if (e.key === "Backspace") {
     e.preventDefault();
+    playClick();
     onBackspace();
     return;
   }
-  if (e.key >= "0" && e.key <= "9") onDigit(e.key);
+  if (e.key >= "0" && e.key <= "9") {
+    playClick();
+    onDigit(e.key);
+  }
 }
 
 // ---------- boot ----------
@@ -1074,13 +1088,13 @@ function boot() {
     say("start", "");
   });
   document.addEventListener("keydown", onKey);
-  document.addEventListener("pointerdown", unlockAudio, true);
-  document.addEventListener("touchstart", unlockAudio, true);
-  document.addEventListener("click", function (e) {
-    var btn = e.target.closest("button");
-    if (!btn || btn.disabled) return;
+  document.addEventListener("pointerdown", function (e) {
+    unlockAudio();
+    var btn = e.target.closest("button, .round-card, .pad-key");
+    if (!btn || btn.disabled || (btn.classList && btn.classList.contains("deco"))) return;
     playClick();
   }, true);
+  document.addEventListener("touchstart", unlockAudio, true);
   try { localStorage.removeItem("zapcity-muted"); } catch (e) {}
   setMuted(false);
 
