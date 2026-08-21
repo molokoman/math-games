@@ -1209,6 +1209,7 @@ button.fact-chip {
 }
 
 #screen-start .title {
+  position: relative;
   animation: title-hit 1.8s linear infinite;
 }
 #screen-start .title::after {
