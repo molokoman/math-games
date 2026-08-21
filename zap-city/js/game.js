@@ -690,12 +690,12 @@ function liveDrops() {
 function liveFalls() {
   return liveDrops().filter(function (d) { return d.role === "fall"; });
 }
-function maxFalls() {
-  try {
-    return window.matchMedia("(min-width: 720px)").matches ? 2 : 1;
-  } catch (e) {
-    return 1;
-  }
+function maxFalls() { return 2; }
+function canPairSecond() {
+  var live = liveFalls();
+  if (live.length !== 1) return false;
+  if (live[0].speed === "fast") return false;
+  return true;
 }
 function paintSkyProblems() {
   var el = $("sky-problem");
@@ -716,20 +716,20 @@ function pickUniqueQuestion() {
   return q;
 }
 function pickFallSpeed() {
-  var wave = ROUND_INFO[state.roundIndex].fall;
-  var hasFast = liveFalls().some(function (d) { return d.speed === "fast"; });
-  if (wave === "slow") return "slow";
-  if (hasFast) return Math.random() < 0.55 ? "slow" : "norm";
-  if (Math.random() < 0.22) return "fast";
-  if (Math.random() < 0.4) return "slow";
-  return "norm";
+  var live = liveFalls();
+  if (live.length) {
+    return live[0].speed === "slow" ? "medium" : "slow";
+  }
+  if (ROUND_INFO[state.roundIndex].fall === "slow") return "slow";
+  var r = Math.random();
+  if (r < 0.22) return "fast";
+  if (r < 0.58) return "slow";
+  return "medium";
 }
-function speedMs(speed, role) {
-  if (role === "saucer") return 5200;
-  var roomy = maxFalls() > 1;
-  if (speed === "fast") return roomy ? 2500 : 2000;
-  if (speed === "slow") return roomy ? 4300 : 3600;
-  return roomy ? 3400 : 3000;
+function speedMs(speed) {
+  if (speed === "fast") return 2200;
+  if (speed === "slow") return 4200;
+  return 3200;
 }
 function clearFallTimer() {
   if (state.fallTimer) {
@@ -818,30 +818,15 @@ function scheduleFill() {
 function maybeFillDrops() {
   if (!$("screen-game").classList.contains("active")) return;
   if (standingCount() <= 0) { endRound(); return; }
-  if (state.spawnedCount < QUESTIONS_PER_ROUND && liveFalls().length < maxFalls()) {
+  var live = liveFalls().length;
+  if (state.spawnedCount < QUESTIONS_PER_ROUND && live === 0) {
+    spawnDrop("fall");
+  } else if (state.spawnedCount < QUESTIONS_PER_ROUND && canPairSecond() && Math.random() < 0.4) {
     spawnDrop("fall");
   }
   if (state.spawnedCount >= QUESTIONS_PER_ROUND && !liveDrops().length) {
     endRound();
-    return;
   }
-  if (state.spawnedCount < QUESTIONS_PER_ROUND && liveFalls().length < maxFalls()) scheduleFill();
-  maybeSaucer();
-}
-
-function maybeSaucer() {
-  return;
-  if (liveDrops().some(function (d) { return d.role === "saucer"; })) return;
-  if (liveFalls().length < 1) return;
-  if (Math.random() > 0.28) return;
-  if (state.saucerTimer) return;
-  state.saucerTimer = window.setTimeout(function () {
-    state.saucerTimer = null;
-    if (!$("screen-game").classList.contains("active")) return;
-    if (liveFalls().length < 1) return;
-    if (liveDrops().some(function (d) { return d.role === "saucer"; })) return;
-    spawnDrop("saucer");
-  }, rand(700, 1500));
 }
 
 function spawnProblem() {
@@ -849,10 +834,11 @@ function spawnProblem() {
 }
 
 function spawnDrop(role) {
+  role = "fall";
   var q = pickUniqueQuestion();
-  var speed = role === "saucer" ? "slow" : pickFallSpeed();
-  var ms = speedMs(speed, role);
-  if (role === "fall") state.spawnedCount += 1;
+  var speed = pickFallSpeed();
+  var ms = speedMs(speed);
+  state.spawnedCount += 1;
   state.qIndex = Math.max(0, state.spawnedCount - 1);
   state.current = q;
   if (q && state.waveFacts.indexOf(q.prompt) === -1) state.waveFacts.push(q.prompt);
@@ -861,21 +847,7 @@ function spawnDrop(role) {
   var field = $("playfield");
   var wrap;
   var card;
-  if (role === "saucer") {
-    wrap = document.createElement("div");
-    wrap.className = "saucer";
-    wrap.innerHTML = '<div class="saucer-dome"></div><div class="saucer-body"></div>';
-    card = document.createElement("div");
-    card.className = "falling-problem saucer-fact";
-    card.textContent = q.prompt;
-    wrap.appendChild(card);
-    box.appendChild(wrap);
-    var fly = (field.clientWidth || 320) + 140;
-    wrap.style.left = "-90px";
-    wrap.style.top = rand(8, 26) + "%";
-    wrap.style.setProperty("--fly-x", fly + "px");
-    wrap.style.animationDuration = ms + "ms";
-  } else {
+  {
     card = document.createElement("div");
     card.className = "falling-problem";
     card.style.animation = "none";
@@ -909,16 +881,8 @@ function spawnDrop(role) {
   var drop = { role: role, q: q, card: card, wrap: wrap, speed: speed, ms: ms, done: false, timer: null, onEnd: null };
   drop.onEnd = function (e) {
     if (drop.done) return;
-    if (role === "fall") {
-      if (e && e.animationName && e.animationName !== "problem-fall") return;
-      hitDrop(drop);
-    } else {
-      if (e && e.animationName && e.animationName !== "saucer-fly") return;
-      drop.done = true;
-      if (wrap.parentNode) wrap.remove();
-      paintSkyProblems();
-      maybeFillDrops();
-    }
+    if (e && e.animationName && e.animationName !== "problem-fall") return;
+    hitDrop(drop);
   };
   wrap.addEventListener("animationend", drop.onEnd);
   if (state.reduceMotion) {
@@ -935,8 +899,7 @@ function spawnDrop(role) {
   renderHud();
   paintSkyProblems();
   setPadEnabled(true);
-  if (role === "fall" && liveFalls().length < maxFalls()) scheduleFill();
-  maybeSaucer();
+  if (canPairSecond()) scheduleFill();
 }
 
 function startRound(index) {
@@ -990,7 +953,7 @@ function zapDrop(drop) {
   drop.done = true;
   if (drop.timer) { clearTimeout(drop.timer); drop.timer = null; }
   if (drop.wrap) drop.wrap.removeEventListener("animationend", drop.onEnd);
-  state.zaps += drop.role === "saucer" ? 2 : 1;
+  state.zaps += 1;
   state.results.push("zap");
   recordFact(drop.q.prompt, currentKind(), true);
   playZap();
