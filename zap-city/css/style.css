@@ -1165,9 +1165,10 @@ button.fact-chip {
 }
 .intro-laser .beam {
   stroke: #2ef5ff;
-  stroke-width: 2.4;
+  stroke-width: 3;
   stroke-linecap: square;
   fill: none;
+  filter: none;
   animation: intro-laser-draw 1.8s linear infinite;
 }
 @keyframes intro-laser-draw {
@@ -1299,4 +1300,13 @@ button.fact-chip {
 .title, .title em { text-shadow: none; }
 .btn, .btn.secondary, .btn.primary, .round-card.btn {
   box-shadow: none;
+}
+
+#screen-start #btn-start {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+#screen-start #btn-facts {
+  margin-top: auto;
+  margin-bottom: 20px;
 }
