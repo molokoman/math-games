@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#0b1b4a" />
+  <title>Star Quest</title>
+  <link rel="icon" href="assets/star.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="css/style.css" />
+  <!--
+    Star Quest — a local math game for ages ~7.
+    Open this file by double-clicking it. No internet or install needed.
+    Tweak question counts and difficulty in js/game.js (look for TWEAK THESE).
+  -->
+</head>
+<body>
+  <div id="sky" aria-hidden="true"></div>
+
+  <button id="btn-mute" class="icon-btn" type="button" aria-pressed="false" aria-label="Sound is on. Tap to mute.">
+    <span class="icon-sound" data-on="🔊" data-off="🔇">🔊</span>
+  </button>
+
+  <!-- START -->
+  <section id="screen-start" class="screen active" aria-label="Start screen">
+    <p class="eyebrow">A math adventure</p>
+    <h1 class="title">
+      <span class="title-star" aria-hidden="true">✦</span>
+      Star Quest
+      <span class="title-star" aria-hidden="true">✦</span>
+    </h1>
+    <p class="tagline">Collect stars by solving math. You can do it!</p>
+
+    <div class="hero-wrap" aria-hidden="true">
+      <div class="hero mood-wave" data-hero>
+        <!-- friendly star buddy: simple SVG, not scary -->
+        <svg viewBox="0 0 200 220" class="hero-svg" role="img">
+          <defs>
+            <radialGradient id="starGlow" cx="50%" cy="45%" r="55%">
+              <stop offset="0%" stop-color="#fff6b0" />
+              <stop offset="55%" stop-color="#ffd54a" />
+              <stop offset="100%" stop-color="#f5a623" />
+            </radialGradient>
+          </defs>
+          <ellipse class="hero-shadow" cx="100" cy="208" rx="42" ry="8" fill="#000" opacity="0.28" />
+          <polygon class="hero-body" points="100,18 122,72 180,78 136,118 148,176 100,146 52,176 64,118 20,78 78,72" fill="url(#starGlow)" stroke="#fff8d0" stroke-width="4" stroke-linejoin="round" />
+          <circle class="blush l" cx="62" cy="108" r="10" fill="#ff8a6a" opacity="0.55" />
+          <circle class="blush r" cx="138" cy="108" r="10" fill="#ff8a6a" opacity="0.55" />
+          <g class="eyes">
+            <ellipse class="eye l" cx="78" cy="96" rx="10" ry="12" fill="#2a1848" />
+            <ellipse class="eye r" cx="122" cy="96" rx="10" ry="12" fill="#2a1848" />
+            <circle class="shine" cx="74" cy="91" r="3.2" fill="#fff" />
+            <circle class="shine" cx="118" cy="91" r="3.2" fill="#fff" />
+          </g>
+          <path class="mouth smile" d="M84 124 Q100 140 116 124" fill="none" stroke="#2a1848" stroke-width="5" stroke-linecap="round" />
+          <path class="mouth oops" d="M92 126 Q100 118 108 126 Q100 136 92 126" fill="#2a1848" />
+          <ellipse class="mouth wow" cx="100" cy="128" rx="10" ry="12" fill="#2a1848" />
+        </svg>
+      </div>
+    </div>
+
+    <p id="speech-start" class="speech" role="status">Hi! I’m Pip. Tap Let’s Go — then tap the right number!</p>
+
+    <button id="btn-start" class="btn primary huge" type="button">Let’s Go!</button>
+
+    <p class="pick-label">Or pick a round</p>
+    <div class="round-grid" id="round-picks"></div>
+
+    <label class="toggle-row" for="toggle-timer">
+      <input id="toggle-timer" type="checkbox" />
+      <span>Timer (off — no rush!)</span>
+    </label>
+  </section>
+
+  <!-- GAME -->
+  <section id="screen-game" class="screen" aria-label="Game" hidden>
+    <header class="hud">
+      <div class="hearts" id="hearts" aria-live="polite" aria-label="Hearts left"></div>
+      <div class="progress" id="progress-stars" aria-label="Question progress"></div>
+      <div class="round-chip" id="round-chip">Round 1</div>
+    </header>
+
+    <div class="path-wrap" aria-hidden="true">
+      <div class="path" id="path"></div>
+      <div class="hero mood-think on-path" data-hero>
+        <svg viewBox="0 0 200 220" class="hero-svg" role="img">
+          <defs>
+            <radialGradient id="starGlow2" cx="50%" cy="45%" r="55%">
+              <stop offset="0%" stop-color="#fff6b0" />
+              <stop offset="55%" stop-color="#ffd54a" />
+              <stop offset="100%" stop-color="#f5a623" />
+            </radialGradient>
+          </defs>
+          <ellipse class="hero-shadow" cx="100" cy="208" rx="42" ry="8" fill="#000" opacity="0.28" />
+          <polygon class="hero-body" points="100,18 122,72 180,78 136,118 148,176 100,146 52,176 64,118 20,78 78,72" fill="url(#starGlow2)" stroke="#fff8d0" stroke-width="4" stroke-linejoin="round" />
+          <circle class="blush l" cx="62" cy="108" r="10" fill="#ff8a6a" opacity="0.55" />
+          <circle class="blush r" cx="138" cy="108" r="10" fill="#ff8a6a" opacity="0.55" />
+          <g class="eyes">
+            <ellipse class="eye l" cx="78" cy="96" rx="10" ry="12" fill="#2a1848" />
+            <ellipse class="eye r" cx="122" cy="96" rx="10" ry="12" fill="#2a1848" />
+            <circle class="shine" cx="74" cy="91" r="3.2" fill="#fff" />
+            <circle class="shine" cx="118" cy="91" r="3.2" fill="#fff" />
+          </g>
+          <path class="mouth smile" d="M84 124 Q100 140 116 124" fill="none" stroke="#2a1848" stroke-width="5" stroke-linecap="round" />
+          <path class="mouth oops" d="M92 126 Q100 118 108 126 Q100 136 92 126" fill="#2a1848" />
+          <ellipse class="mouth wow" cx="100" cy="128" rx="10" ry="12" fill="#2a1848" />
+        </svg>
+      </div>
+    </div>
+
+    <p id="speech-game" class="speech" role="status">What is the answer?</p>
+
+    <div class="question-card">
+      <p class="q-label" id="q-label">Question 1 of 8</p>
+      <p class="question" id="question" aria-live="polite">3 + 4</p>
+      <div class="timer" id="timer" hidden>
+        <div class="timer-bar" id="timer-bar"></div>
+      </div>
+    </div>
+
+    <div class="answers" id="answers" role="group" aria-label="Answer choices. Press 1 through 4 on the keyboard."></div>
+  </section>
+
+  <!-- END -->
+  <section id="screen-end" class="screen" aria-label="Round finished" hidden>
+    <h2 class="title small">You did it!</h2>
+    <div class="hero-wrap" aria-hidden="true">
+      <div class="hero mood-yay" data-hero>
+        <svg viewBox="0 0 200 220" class="hero-svg" role="img">
+          <defs>
+            <radialGradient id="starGlow3" cx="50%" cy="45%" r="55%">
+              <stop offset="0%" stop-color="#fff6b0" />
+              <stop offset="55%" stop-color="#ffd54a" />
+              <stop offset="100%" stop-color="#f5a623" />
+            </radialGradient>
+          </defs>
+          <ellipse class="hero-shadow" cx="100" cy="208" rx="42" ry="8" fill="#000" opacity="0.28" />
+          <polygon class="hero-body" points="100,18 122,72 180,78 136,118 148,176 100,146 52,176 64,118 20,78 78,72" fill="url(#starGlow3)" stroke="#fff8d0" stroke-width="4" stroke-linejoin="round" />
+          <circle class="blush l" cx="62" cy="108" r="10" fill="#ff8a6a" opacity="0.55" />
+          <circle class="blush r" cx="138" cy="108" r="10" fill="#ff8a6a" opacity="0.55" />
+          <g class="eyes">
+            <ellipse class="eye l" cx="78" cy="96" rx="10" ry="12" fill="#2a1848" />
+            <ellipse class="eye r" cx="122" cy="96" rx="10" ry="12" fill="#2a1848" />
+            <circle class="shine" cx="74" cy="91" r="3.2" fill="#fff" />
+            <circle class="shine" cx="118" cy="91" r="3.2" fill="#fff" />
+          </g>
+          <path class="mouth smile" d="M84 124 Q100 140 116 124" fill="none" stroke="#2a1848" stroke-width="5" stroke-linecap="round" />
+          <path class="mouth oops" d="M92 126 Q100 118 108 126 Q100 136 92 126" fill="#2a1848" />
+          <ellipse class="mouth wow" cx="100" cy="128" rx="10" ry="12" fill="#2a1848" />
+        </svg>
+      </div>
+    </div>
+    <p id="end-stars" class="end-stars">7 stars</p>
+    <p id="speech-end" class="speech" role="status">Wow! You collected so many stars!</p>
+    <div class="end-actions">
+      <button id="btn-again" class="btn primary huge" type="button">Play again</button>
+      <button id="btn-next" class="btn secondary huge" type="button">Next round</button>
+      <button id="btn-picks" class="btn ghost" type="button">Pick a round</button>
+    </div>
+  </section>
+
+  <div id="confetti" aria-hidden="true"></div>
+
+  <script src="js/game.js"></script>
+</body>
+</html>
