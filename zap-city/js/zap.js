@@ -172,15 +172,21 @@ function makeSub(maxMinuend, minMinuend) {
   return { prompt: a + " − " + b, answer: a - b };
 }
 
+function isMasteredPrompt(prompt, kind) {
+  var row = loadFacts()[prompt];
+  return !!(row && row.kind === kind && factStatus(row) === "mastered");
+}
+
 function nextQuestion(kind) {
   var pool = strugglePool(kind);
-  if (pool.length && Math.random() < 0.45) {
+  if (pool.length && Math.random() < 0.5) {
     var picked = parsePrompt(pick(pool));
     if (picked && state.asked.indexOf(uniqueKey(picked)) === -1) {
       state.asked.push(uniqueKey(picked));
       return picked;
     }
   }
+  var review = Math.random() < 0.1;
   var q, tries = 0;
   do {
     if (kind === "add10") q = makeAdd(10, 4);
@@ -188,7 +194,11 @@ function nextQuestion(kind) {
     else if (kind === "sub10") q = makeSub(10, 4);
     else q = Math.random() < 0.55 ? makeAdd(20, 6) : makeSub(20, 6);
     tries++;
-  } while (state.asked.indexOf(uniqueKey(q)) !== -1 && tries < 30);
+  } while (
+    tries < 40 &&
+    (state.asked.indexOf(uniqueKey(q)) !== -1 ||
+      (!review && isMasteredPrompt(q.prompt, kind)))
+  );
   state.asked.push(uniqueKey(q));
   return q;
 }
@@ -264,24 +274,24 @@ function noiseBurst(dur, when, vol, filterType, freq) {
   src.stop(t + dur + 0.02);
 }
 
-function playZap() {
-  // arcade pew: falling sweep + crack
-  sweep(1600, 180, 0.16, "sawtooth", 0, 0.38);
-  sweep(2400, 400, 0.12, "square", 0, 0.22);
-  noiseBurst(0.08, 0, 0.28, "highpass", 1800);
-  beep(1320, 0.06, "triangle", 0.02, 0.2);
-}
-
 function playWrong() {
-  sweep(280, 90, 0.18, "square", 0, 0.16);
+  try { sweep(280, 90, 0.18, "square", 0, 0.16); } catch (e) {}
 }
 
 function playHit() {
-  // chunky rooftop boom
-  noiseBurst(0.28, 0, 0.42, "lowpass", 420);
-  noiseBurst(0.12, 0, 0.3, "bandpass", 900);
-  sweep(220, 45, 0.32, "sawtooth", 0, 0.3);
-  beep(55, 0.36, "sine", 0.02, 0.28);
+  // rumble first so a noise failure cannot mute the boom
+  try { beep(90, 0.18, "square", 0, 0.34); } catch (e) {}
+  try { beep(48, 0.4, "sine", 0, 0.32); } catch (e) {}
+  try { sweep(180, 40, 0.28, "sawtooth", 0, 0.3); } catch (e) {}
+  try { noiseBurst(0.28, 0, 0.42, "lowpass", 420); } catch (e) {}
+  try { noiseBurst(0.1, 0, 0.22, "lowpass", 700); } catch (e) {}
+}
+
+function playZap() {
+  try { sweep(1600, 180, 0.16, "sawtooth", 0, 0.38); } catch (e) {}
+  try { sweep(2400, 400, 0.12, "square", 0, 0.22); } catch (e) {}
+  try { beep(880, 0.1, "square", 0, 0.3); } catch (e) {}
+  try { noiseBurst(0.08, 0, 0.28, "highpass", 1800); } catch (e) {}
 }
 
 function flashField() {
