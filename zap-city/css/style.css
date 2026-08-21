@@ -1866,3 +1866,20 @@ button.fact-chip {
   margin: 0 !important;
   padding: 0 !important;
 }
+
+
+#screen-end.end-scooch,
+#screen-end {
+  justify-content: flex-start !important;
+  padding-top: calc(60px + env(safe-area-inset-top, 0px)) !important;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+  gap: 12px !important;
+}
+#screen-end.end-scooch > .end-zaps,
+#screen-end > .end-zaps { margin: 0 64px !important; }
+#screen-end.end-scooch > .end-mastery,
+#screen-end > .end-mastery { margin: 0 !important; }
+#screen-end.end-scooch > .intro-city,
+#screen-end > .intro-city { margin: 0 !important; }
+#screen-end.end-scooch > .end-actions,
+#screen-end > .end-actions { margin: 0 !important; }
