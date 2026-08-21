@@ -1162,3 +1162,35 @@ button.fact-chip {
   50% { stroke-dashoffset: 0; opacity: 1; }
   80%, 100% { stroke-dashoffset: 0; opacity: 0; }
 }
+
+.round-card.btn {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 320px;
+  min-height: 72px;
+  height: 72px;
+  padding: 0 22px;
+  font-size: 1.45rem;
+  letter-spacing: 0.04em;
+  text-align: left;
+  background: var(--neon);
+  color: #041018;
+  border: 2px solid var(--neon);
+  box-shadow: 0 0 16px rgba(46, 245, 255, 0.25);
+}
+.round-card.btn .round-sym,
+.round-card.btn .round-word,
+.round-card.btn .round-num {
+  display: inline;
+  font-size: inherit;
+  font-weight: 800;
+  line-height: 1;
+  color: inherit;
+  text-shadow: none;
+  opacity: 1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}

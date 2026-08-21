@@ -497,7 +497,7 @@ function buildRoundPicks(intoId, onPick) {
   ROUND_INFO.forEach(function (r, i) {
     var b = document.createElement("button");
     b.type = "button";
-    b.className = "round-card";
+    b.className = "btn primary huge round-card";
     b.setAttribute("aria-label", r.name + (r.range ? " " + r.range : ""));
     b.innerHTML = '<span class="round-sym">' + r.symbol + '</span>' +
       '<span class="round-word">' + r.name + '</span>' +
