@@ -1694,3 +1694,12 @@ button.fact-chip {
   top: 6px;
   bottom: 6px;
 }
+
+
+#screen-end .end-zaps {
+  font-size: 1.45rem;
+}
+#screen-end .end-zaps .ico-zap {
+  width: 1.15em;
+  height: 1.15em;
+}
