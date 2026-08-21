@@ -1662,3 +1662,17 @@ button.fact-chip {
   margin-top: 16px;
   margin-bottom: 76px;
 }
+
+
+.b-body {
+  overflow: hidden;
+}
+.b-windows {
+  overflow: hidden;
+  align-content: start;
+  inset: 6px 4px 5px;
+}
+#screen-game .win {
+  height: 4px;
+  max-height: 4px;
+}

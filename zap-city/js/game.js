@@ -566,7 +566,7 @@ function fillBuildings(box, track) {
     b.dataset.building = String(i);
     b.style.height = plan.h + "%";
     var win = "";
-    var rows = 3 + (i % 3);
+    var rows = plan.h >= 78 ? 4 : plan.h >= 64 ? 3 : 2;
     for (var r = 0; r < rows * 2; r++) win += '<span class="win"></span>';
     b.innerHTML =
       '<div class="b-spire" aria-hidden="true"></div>' +
