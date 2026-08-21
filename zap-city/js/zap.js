@@ -930,14 +930,18 @@ function startRound(index) {
 
 function burstConfetti() {
   var layer = $("confetti");
-  var bits = ["✦", "⚡", "★", "✶", "✨"];
+  if (!layer) return;
+  var hues = ["#ffe14a", "#2ef5ff", "#ff3d8a"];
   for (var i = 0; i < 16; i++) {
     var el = document.createElement("div");
     el.className = "confetti-bit";
-    el.textContent = pick(bits);
+    var size = 16 + Math.random() * 18;
+    el.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 L14.9 8.6 L22 9.3 L16.5 14 L18.2 21 L12 17.3 L5.8 21 L7.5 14 L2 9.3 L9.1 8.6 Z"/></svg>';
     el.style.left = Math.random() * 100 + "%";
+    el.style.width = size + "px";
+    el.style.height = size + "px";
+    el.style.color = hues[i % hues.length];
     el.style.animationDelay = (Math.random() * 0.15) + "s";
-    el.style.fontSize = (16 + Math.random() * 18) + "px";
     layer.appendChild(el);
     window.setTimeout(function (node) { return function () { node.remove(); }; }(el), 1500);
   }

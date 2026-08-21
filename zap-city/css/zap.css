@@ -1794,3 +1794,20 @@ button.fact-chip {
 #screen-end .intro-city.mini {
   margin-top: 4px;
 }
+
+
+.confetti-bit {
+  font-size: 0;
+  color: #ffe14a;
+}
+.confetti-bit svg,
+.confetti-bit path {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: #090014;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linejoin: miter;
+  stroke-linecap: square;
+}
