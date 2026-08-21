@@ -1000,8 +1000,31 @@ button, input, a { font: inherit; color: inherit; }
   margin-top: 0;
 }
 
-.b-tip, .b-antenna { display: none !important; }
-.b-body { top: 0; }
+.b-tip { display: none !important; }
+.b-antenna {
+  display: block !important;
+  left: 50%;
+  top: 0;
+  width: 2px;
+  height: 16px;
+  margin-left: -1px;
+  background: #c5d0da;
+  border-radius: 1px;
+  box-shadow: none;
+  z-index: 2;
+}
+.b-antenna::before,
+.b-antenna::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  height: 2px;
+  background: #c5d0da;
+}
+.b-antenna::before { top: 1px; width: 11px; margin-left: -5.5px; }
+.b-antenna::after { top: 5px; width: 7px; margin-left: -3.5px; background: #a8b4c0; }
+.b-body { top: 16px; }
+.building.firing .b-antenna { background: #fff; box-shadow: 0 0 8px #2ef5ff; }
 #screen-start .intro-city { margin-top: 48px; margin-bottom: 0; }
 #screen-start #btn-start { margin-top: auto; margin-bottom: auto; }
 #screen-start #btn-facts { margin-top: 0; }
