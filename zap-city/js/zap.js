@@ -416,7 +416,7 @@ function setMuted(on) {
 
 // ---------- screens ----------
 function showScreen(id) {
-  ["screen-start", "screen-game", "screen-end", "screen-facts"].forEach(function (sid) {
+  ["screen-start", "screen-picks", "screen-game", "screen-end", "screen-facts"].forEach(function (sid) {
     var el = $(sid);
     var on = sid === id;
     el.classList.toggle("active", on);
@@ -1044,16 +1044,20 @@ function boot() {
   buildCity();
   buildPad();
   buildRoundPicks("round-picks", startRound);
-  $("btn-start").addEventListener("click", function () { startRound(0); });
+  $("btn-start").addEventListener("click", function () {
+    unlockAudio();
+    showScreen("screen-picks");
+  });
   $("btn-again").addEventListener("click", function () { startRound(state.roundIndex); });
   $("btn-next").addEventListener("click", function () {
     startRound(Math.min(state.roundIndex + 1, ROUND_INFO.length - 1));
   });
   $("btn-picks").addEventListener("click", function () {
     stopFalling();
+    showScreen("screen-picks");
+  });
+  if ($("btn-picks-back")) $("btn-picks-back").addEventListener("click", function () {
     showScreen("screen-start");
-    setZipMood("wave");
-    say("start", "");
   });
   $("btn-mute").addEventListener("click", function () { setMuted(!state.muted); });
   if ($("btn-facts")) $("btn-facts").addEventListener("click", openFacts);
@@ -1065,7 +1069,6 @@ function boot() {
   document.addEventListener("keydown", onKey);
   document.addEventListener("pointerdown", unlockAudio, true);
   document.addEventListener("touchstart", unlockAudio, true);
-  $("btn-start").addEventListener("click", function () { unlockAudio(); playZap(); });
   try { localStorage.removeItem("zapcity-muted"); } catch (e) {}
   setMuted(false);
 
