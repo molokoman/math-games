@@ -1065,3 +1065,12 @@ button.fact-chip {
   padding: 8px 4px 12px;
   cursor: pointer;
 }
+
+#screen-end #btn-again,
+#screen-end #btn-picks {
+  width: 100%;
+  max-width: 320px;
+  min-width: 0;
+  min-height: 72px;
+  font-size: 1.45rem;
+}
