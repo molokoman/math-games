@@ -469,6 +469,7 @@ function showScreen(id) {
     if (on) el.removeAttribute("hidden");
     else el.setAttribute("hidden", "");
   });
+  parkMute(id === "screen-game");
 }
 
 function say(which, text) {
@@ -619,9 +620,8 @@ function buildPad() {
   keys.forEach(function (k) {
     if (k === "deco") {
       var s = document.createElement("div");
-      s.className = "pad-key deco";
-      s.setAttribute("aria-hidden", "true");
-      s.textContent = "⚡";
+      s.id = "pad-mute";
+      s.className = "pad-mute";
       box.appendChild(s);
       return;
     }
@@ -642,7 +642,17 @@ function buildPad() {
 }
 
 function setPadEnabled(on) {
-  $("pad").querySelectorAll("button").forEach(function (b) { b.disabled = !on; });
+  $("pad").querySelectorAll("button.pad-key").forEach(function (b) { b.disabled = !on; });
+}
+
+function parkMute(onPad) {
+  var mute = $("btn-mute");
+  var slot = $("pad-mute");
+  if (!mute) return;
+  if (onPad && slot) slot.appendChild(mute);
+  else if (mute.parentNode !== document.body) {
+    document.body.insertBefore(mute, document.body.firstChild);
+  }
 }
 
 // ---------- HUD ----------
@@ -1251,7 +1261,7 @@ function boot() {
   document.addEventListener("pointerdown", function (e) {
     unlockAudio();
     var btn = e.target.closest("button, .round-card, .pad-key, #end-mastery");
-    if (!btn || btn.disabled || (btn.classList && btn.classList.contains("deco"))) return;
+    if (!btn || btn.disabled || btn.id === "btn-mute" || (btn.classList && btn.classList.contains("deco"))) return;
     if (btn.classList.contains("pad-key") || (btn.closest && btn.closest("#pad"))) playClick();
     else playZap();
   }, true);
