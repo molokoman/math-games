@@ -690,6 +690,13 @@ function liveDrops() {
 function liveFalls() {
   return liveDrops().filter(function (d) { return d.role === "fall"; });
 }
+function maxFalls() {
+  try {
+    return window.matchMedia("(min-width: 720px)").matches ? 2 : 1;
+  } catch (e) {
+    return 1;
+  }
+}
 function paintSkyProblems() {
   var el = $("sky-problem");
   if (!el) return;
@@ -719,9 +726,10 @@ function pickFallSpeed() {
 }
 function speedMs(speed, role) {
   if (role === "saucer") return 5200;
-  if (speed === "fast") return 2000;
-  if (speed === "slow") return 3600;
-  return 3000;
+  var roomy = maxFalls() > 1;
+  if (speed === "fast") return roomy ? 2500 : 2000;
+  if (speed === "slow") return roomy ? 4300 : 3600;
+  return roomy ? 3400 : 3000;
 }
 function clearFallTimer() {
   if (state.fallTimer) {
@@ -810,14 +818,14 @@ function scheduleFill() {
 function maybeFillDrops() {
   if (!$("screen-game").classList.contains("active")) return;
   if (standingCount() <= 0) { endRound(); return; }
-  if (state.spawnedCount < QUESTIONS_PER_ROUND && liveFalls().length < 1) {
+  if (state.spawnedCount < QUESTIONS_PER_ROUND && liveFalls().length < maxFalls()) {
     spawnDrop("fall");
   }
   if (state.spawnedCount >= QUESTIONS_PER_ROUND && !liveDrops().length) {
     endRound();
     return;
   }
-  if (state.spawnedCount < QUESTIONS_PER_ROUND && liveFalls().length < 1) scheduleFill();
+  if (state.spawnedCount < QUESTIONS_PER_ROUND && liveFalls().length < maxFalls()) scheduleFill();
   maybeSaucer();
 }
 
@@ -927,6 +935,7 @@ function spawnDrop(role) {
   renderHud();
   paintSkyProblems();
   setPadEnabled(true);
+  if (role === "fall" && liveFalls().length < maxFalls()) scheduleFill();
   maybeSaucer();
 }
 
