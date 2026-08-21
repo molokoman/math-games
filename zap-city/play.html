@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#090014" />
   <title>Zap City</title>
   <link rel="icon" href="assets/zip.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="css/zap.css?v=snd40" />
+  <link rel="stylesheet" href="css/zap.css?v=snd41" />
 </head>
 <body>
   <div id="sky" aria-hidden="true"></div>
@@ -17,12 +17,13 @@
   </button>
 
   <section id="screen-start" class="screen active" aria-label="Start">
+    <div class="home-hero">
     <h1 class="title">ZAP<em>CITY</em></h1>
+    <svg class="intro-laser" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line class="beam" x1="38" y1="88" x2="50" y2="14" /></svg>
     <div class="intro-city" aria-hidden="true">
-      <div class="intro-threat"></div>
-      <svg class="intro-laser" viewBox="0 0 100 100" preserveAspectRatio="none"><line class="beam" x1="70" y1="12" x2="38" y2="80" /></svg>
       <div class="buildings" id="intro-buildings"></div>
       <div class="ground"></div>
+    </div>
     </div>
 <button id="btn-start" class="btn primary huge" type="button" aria-label="Defend city"><svg class="ico-shield" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 L20 6.5 V12.2 C20 16.8 16.6 20.2 12 21.5 C7.4 20.2 4 16.8 4 12.2 V6.5 Z" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linejoin="miter"/></svg> Defend city</button>
     <button id="btn-facts" class="btn secondary huge" type="button" aria-label="Mastery">★ Mastery</button>
@@ -90,6 +91,6 @@
   </section>
 
   <div id="confetti" aria-hidden="true"></div>
-  <script src="js/zap.js?v=snd40"></script>
+  <script src="js/zap.js?v=snd41"></script>
 </body>
 </html>

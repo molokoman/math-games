@@ -507,6 +507,36 @@ function buildRoundPicks(intoId, onPick) {
   });
 }
 
+
+function paintHomeLaser() {
+  var hero = document.querySelector(".home-hero");
+  var svg = hero && hero.querySelector(".intro-laser");
+  var line = svg && svg.querySelector(".beam");
+  var title = document.querySelector("#screen-start .title");
+  var buildings = document.querySelectorAll("#intro-buildings .building");
+  if (!hero || !svg || !line || !title || !buildings.length) return;
+  var hr = hero.getBoundingClientRect();
+  if (hr.width < 8 || hr.height < 8) return;
+  svg.setAttribute("viewBox", "0 0 " + Math.round(hr.width) + " " + Math.round(hr.height));
+  svg.setAttribute("width", String(Math.round(hr.width)));
+  svg.setAttribute("height", String(Math.round(hr.height)));
+  var b = buildings[3] || buildings[Math.floor(buildings.length / 2)];
+  var tip = b.querySelector(".b-spire") || b.querySelector(".b-body") || b;
+  var tr = tip.getBoundingClientRect();
+  var tt = title.getBoundingClientRect();
+  var x1 = tr.left + tr.width / 2 - hr.left;
+  var y1 = tr.top - hr.top;
+  var x2 = tt.left + tt.width * 0.55 - hr.left;
+  var y2 = tt.bottom - 6 - hr.top;
+  line.setAttribute("x1", String(x1));
+  line.setAttribute("y1", String(y1));
+  line.setAttribute("x2", String(x2));
+  line.setAttribute("y2", String(y2));
+  var len = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+  line.style.strokeDasharray = String(Math.max(40, len));
+  line.style.strokeDashoffset = String(Math.max(40, len));
+}
+
 function paintSky() {
   var sky = $("sky");
   sky.innerHTML = "";
@@ -1068,6 +1098,8 @@ function boot() {
 
   paintSky();
   buildCity();
+  paintHomeLaser();
+  window.addEventListener("resize", paintHomeLaser);
   buildPad();
   buildRoundPicks("round-picks", startRound);
   $("btn-start").addEventListener("click", function () {
