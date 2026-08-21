@@ -13,7 +13,7 @@ var STARTING_HEARTS = 3;
 var FALL_MS = 3000;         // default fall
 var SLOW_FALL_MS = 3600;    // round 1
 var SPEED_FALL_MS = 2000;   // speed wave
-var LASER_TRAVEL_MS = 560;  // beam climbs from the nearest tower
+var LASER_TRAVEL_MS = 220;  // snap-fast beam
 var POP_MS = 340;           // problem burst after the beam arrives
 var WRONG_CLEAR_MS = 300;   // shake, then clear typed digits
 var HIT_PAUSE_MS = 1050;    // kind pause after a rooftop boom
@@ -147,21 +147,73 @@ function beep(freq, dur, type, when, vol) {
   osc.stop(ctx.currentTime + when + dur + 0.02);
 }
 
+function sweep(from, to, dur, type, when, vol) {
+  var ctx = ensureAudio();
+  if (!ctx) return;
+  var t = ctx.currentTime + (when || 0);
+  var osc = ctx.createOscillator();
+  var gain = ctx.createGain();
+  osc.type = type || "sawtooth";
+  osc.frequency.setValueAtTime(from, t);
+  osc.frequency.exponentialRampToValueAtTime(Math.max(40, to), t + dur);
+  gain.gain.setValueAtTime(0.0001, t);
+  gain.gain.exponentialRampToValueAtTime(vol, t + 0.012);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(t);
+  osc.stop(t + dur + 0.02);
+}
+
+function noiseBurst(dur, when, vol, filterType, freq) {
+  var ctx = ensureAudio();
+  if (!ctx) return;
+  var n = Math.max(1, Math.floor(ctx.sampleRate * dur));
+  var buf = ctx.createBuffer(1, n, ctx.sampleRate);
+  var data = buf.getChannelData(0);
+  for (var i = 0; i < n; i++) data[i] = Math.random() * 2 - 1;
+  var src = ctx.createBufferSource();
+  src.buffer = buf;
+  var filter = ctx.createBiquadFilter();
+  filter.type = filterType || "lowpass";
+  filter.frequency.value = freq || 800;
+  var gain = ctx.createGain();
+  var t = ctx.currentTime + (when || 0);
+  gain.gain.setValueAtTime(vol, t);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  src.connect(filter);
+  filter.connect(gain);
+  gain.connect(ctx.destination);
+  src.start(t);
+  src.stop(t + dur + 0.02);
+}
+
 function playZap() {
-  beep(220, 0.06, "sawtooth", 0, 0.2);
-  beep(440, 0.1, "square", 0, 0.28);
-  beep(880, 0.12, "square", 0.05, 0.32);
-  beep(1320, 0.18, "triangle", 0.1, 0.34);
+  // arcade pew: falling sweep + crack
+  sweep(1600, 180, 0.16, "sawtooth", 0, 0.38);
+  sweep(2400, 400, 0.12, "square", 0, 0.22);
+  noiseBurst(0.08, 0, 0.28, "highpass", 1800);
+  beep(1320, 0.06, "triangle", 0.02, 0.2);
 }
+
 function playWrong() {
-  beep(196, 0.16, "sine", 0, 0.1);
-  beep(165, 0.18, "sine", 0.1, 0.08);
+  sweep(280, 90, 0.18, "square", 0, 0.16);
 }
+
 function playHit() {
-  beep(70, 0.32, "sawtooth", 0, 0.26);
-  beep(120, 0.22, "square", 0, 0.22);
-  beep(48, 0.4, "sine", 0.05, 0.24);
-  beep(200, 0.12, "triangle", 0.08, 0.14);
+  // chunky rooftop boom
+  noiseBurst(0.28, 0, 0.42, "lowpass", 420);
+  noiseBurst(0.12, 0, 0.3, "bandpass", 900);
+  sweep(220, 45, 0.32, "sawtooth", 0, 0.3);
+  beep(55, 0.36, "sine", 0.02, 0.28);
+}
+
+function flashField() {
+  var field = $("playfield");
+  if (!field) return;
+  field.classList.remove("flash");
+  void field.offsetWidth;
+  field.classList.add("flash");
 }
 
 function setMuted(on) {
@@ -511,6 +563,7 @@ function zapCorrect() {
   state.zaps += 1;
   state.results.push("zap");
   playZap();
+  flashField();
   burstConfetti();
   setZipMood("yay");
   say("game", pick(NICE));
@@ -540,19 +593,23 @@ function zapCorrect() {
 function boomBits(building) {
   var field = $("playfield");
   if (!field || !building) return;
+  flashField();
   var r = building.getBoundingClientRect();
   var f = field.getBoundingClientRect();
-  var colors = ["#ffe14a", "#ff6b5a", "#fff", "#ff3d8a", "#2ef5ff"];
-  for (var i = 0; i < 12; i++) {
+  var colors = ["#ffe14a", "#ff6b5a", "#2a1848", "#ff3d8a", "#7ad7ff", "#fff"];
+  for (var i = 0; i < 18; i++) {
     var el = document.createElement("div");
-    el.className = "boom-bit";
+    el.className = "boom-bit" + (i % 3 === 0 ? " fat" : "");
     el.style.left = (r.left + r.width / 2 - f.left) + "px";
     el.style.top = (r.top + 8 - f.top) + "px";
     el.style.background = colors[i % colors.length];
-    el.style.setProperty("--dx", rand(-56, 56) + "px");
-    el.style.setProperty("--dy", rand(-78, -8) + "px");
+    el.style.width = rand(10, 22) + "px";
+    el.style.height = rand(8, 18) + "px";
+    el.style.setProperty("--dx", rand(-90, 90) + "px");
+    el.style.setProperty("--dy", rand(-110, 20) + "px");
+    el.style.setProperty("--spin", rand(-280, 280) + "deg");
     field.appendChild(el);
-    window.setTimeout(function (n) { return function () { n.remove(); }; }(el), 720);
+    window.setTimeout(function (n) { return function () { n.remove(); }; }(el), 820);
   }
 }
 

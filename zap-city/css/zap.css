@@ -457,11 +457,18 @@ button, input, a { font: inherit; color: inherit; }
   overflow: visible;
 }
 .laser-beam {
-  stroke: #7ad7ff;
-  stroke-width: 4;
+  stroke: #fff;
+  stroke-width: 8;
   stroke-linecap: round;
-  filter: drop-shadow(0 0 7px #7ad7ff);
+  filter: drop-shadow(0 0 10px #2ef5ff) drop-shadow(0 0 18px #ffe14a);
   opacity: 0;
+}
+.playfield.flash {
+  animation: field-flash 0.22s ease;
+}
+@keyframes field-flash {
+  0% { filter: brightness(1.8); }
+  100% { filter: none; }
 }
 .laser-beam.firing {
   opacity: 1;
@@ -579,9 +586,9 @@ button, input, a { font: inherit; color: inherit; }
   position: absolute;
   left: 50%;
   top: -6px;
-  width: 64px;
-  height: 64px;
-  margin-left: -32px;
+  width: 88px;
+  height: 88px;
+  margin-left: -44px;
   border-radius: 50%;
   background: radial-gradient(circle, #fff 0%, #ffe14a 28%, #ff6b5a 58%, transparent 70%);
   animation: boom-pop 0.7s ease-out forwards;
@@ -614,16 +621,22 @@ button, input, a { font: inherit; color: inherit; }
 }
 .boom-bit {
   position: absolute;
-  width: 8px;
-  height: 8px;
+  width: 16px;
+  height: 12px;
   border-radius: 2px;
+  border: 2px solid #111;
   z-index: 9;
   pointer-events: none;
-  animation: boom-bit-fly 0.7s ease-out forwards;
+  animation: boom-bit-fly 0.8s ease-out forwards;
+}
+.boom-bit.fat {
+  width: 26px;
+  height: 16px;
+  border-radius: 3px;
 }
 @keyframes boom-bit-fly {
-  0% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; }
-  100% { transform: translate(var(--dx, 20px), var(--dy, -40px)) scale(0.3) rotate(220deg); opacity: 0; }
+  0% { transform: translate(0, 0) scale(1.15) rotate(0deg); opacity: 1; }
+  100% { transform: translate(var(--dx, 20px), var(--dy, -40px)) scale(0.4) rotate(var(--spin, 220deg)); opacity: 0; }
 }
 .building.wrecked .b-body {
   background: linear-gradient(180deg, #2a2438, #121018) !important;
