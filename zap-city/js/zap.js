@@ -662,7 +662,8 @@ function renderProgress() {
     else if (i === state.qIndex) cls += " now";
     html += '<span class="' + cls + '"></span>';
   }
-  $("progress").innerHTML = html;
+  var box = $("progress");
+  if (box) box.innerHTML = html;
 }
 
 function renderHud() {
