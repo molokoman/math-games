@@ -1940,3 +1940,22 @@ button.fact-chip {
   align-items: center !important;
   gap: 12px !important;
 }
+
+
+#screen-end.end-scooch {
+  gap: 20px !important;
+}
+#screen-end.end-scooch > .intro-city {
+  height: 96px !important;
+}
+#screen-end.end-scooch .intro-city .buildings {
+  top: 0 !important;
+  bottom: 6px !important;
+}
+#screen-end.end-scooch > .end-actions {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+#screen-end.end-scooch > .end-mastery {
+  margin-bottom: 0 !important;
+}
