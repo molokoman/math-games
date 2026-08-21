@@ -940,3 +940,17 @@ button, input, a { font: inherit; color: inherit; }
   max-width: 320px;
   display: flex;
 }
+
+#screen-start #btn-facts {
+  margin-top: auto;
+  width: 100%;
+  max-width: 320px;
+  background: var(--magenta);
+  color: #fff;
+  border-color: var(--magenta);
+  box-shadow: 0 0 16px rgba(255, 61, 138, 0.4);
+}
+#screen-start #btn-start {
+  width: 100%;
+  max-width: 320px;
+}
