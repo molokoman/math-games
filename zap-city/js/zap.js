@@ -236,7 +236,7 @@ function writeWav(seconds, sampleFn) {
   for (var i = 0; i < n; i++) {
     var s = sampleFn(i / rate, i, n);
     if (s > 1) s = 1; if (s < -1) s = -1;
-    v.setInt16(44 + i * 2, s * 32000, true);
+    v.setInt16(44 + i * 2, s * 32767, true);
   }
   return URL.createObjectURL(new Blob([bytes], { type: "audio/wav" }));
 }
@@ -256,11 +256,14 @@ function buildSounds() {
     var f = 1500 - t * 2000;
     return Math.sin(t * f * 6.283) * 0.7 * env + ((t * 90) % 2 - 1) * 0.22 * env;
   });
-  htmlSounds.blast = makeSound(0.34, function (t, i) {
-    var env = Math.exp(-t * 8);
-    var rumble = Math.sin(t * 70 * 6.283) * 0.55;
-    var crack = ((i * 16807) % 1000) / 500 - 1;
-    return (rumble + crack * 0.5) * env;
+  htmlSounds.blast = makeSound(0.58, function (t, i) {
+    var n1 = ((i * 16807) % 2000) / 1000 - 1;
+    var n2 = ((i * 48271) % 2000) / 1000 - 1;
+    var bang = t < 0.045 ? (n1 > 0 ? 1 : -1) * (1 - t / 0.045) : 0;
+    var crack = (n1 * 0.7 + n2 * 0.3) * Math.exp(-t * 9);
+    var thump = Math.sin(t * 42 * 6.283) * Math.exp(-t * 6);
+    var boom = Math.sin(t * 28 * 6.283) * Math.exp(-t * 4.2);
+    return bang * 1 + crack * 0.95 + thump * 0.9 + boom * 0.75;
   });
   htmlSounds.hit = makeSound(0.4, function (t, i) {
     var env = Math.exp(-t * 6);
@@ -368,8 +371,10 @@ function playZap() {
 
 function playBlast() {
   playHtml("blast");
-  tone(70, 0.32, "sine", 0.42);
-  tone(180, 0.12, "square", 0.28);
+  tone(36, 0.5, "sine", 0.58);
+  tone(72, 0.36, "square", 0.48);
+  tone(160, 0.1, "square", 0.4);
+  tone(50, 0.45, "sawtooth", 0.32);
 }
 
 function flashField() {
