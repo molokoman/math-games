@@ -1318,3 +1318,29 @@ button.fact-chip {
 #screen-picks .btn-back-bottom {
   margin-top: 0;
 }
+
+#btn-mute.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  width: 56px;
+  height: 56px;
+  background: #090014 !important;
+  border: 2px solid #2ef5ff !important;
+  border-radius: 4px;
+  box-shadow: none !important;
+  color: #2ef5ff;
+}
+#btn-mute.icon-btn.is-muted,
+#btn-mute.icon-btn[aria-pressed="true"] {
+  color: #ff3d8a;
+  border-color: #ff3d8a !important;
+  background: #090014 !important;
+}
+#btn-mute .ico-sound,
+#btn-mute .ico-sound path,
+#btn-mute .ico-sound rect {
+  fill: none !important;
+  stroke: currentColor !important;
+}
