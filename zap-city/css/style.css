@@ -1719,3 +1719,9 @@ button.fact-chip {
   margin-top: 0;
   margin-bottom: 36px;
 }
+
+
+#screen-game #typed,
+#typed {
+  display: none !important;
+}
