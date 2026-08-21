@@ -289,14 +289,16 @@ function crashFn(kind) {
 
 function buildSounds() {
   if (htmlSounds.zap) return;
-  htmlSounds.zap = makeSound(0.2, function (t, i) {
-    var env = Math.exp(-t * 20) * Math.min(1, t / 0.006);
-    var a = noise01(i, 5);
-    var b = noise01(i + 2, 12);
-    var spark = a - b * 0.65;
-    var tick = (Math.floor(t * 110) % 2 === 0) ? 1 : 0.25;
-    return spark * env * tick * 0.95;
-  });
+  htmlSounds.zap = (function () {
+    var phase = 0;
+    return makeSound(0.15, function (t) {
+      var f = 1400 * Math.pow(90 / 1400, Math.min(1, t / 0.14));
+      phase += f / 22050;
+      var sq = (phase % 1 < 0.5) ? 1 : -1;
+      var env = Math.exp(-t * 10) * Math.min(1, t / 0.004);
+      return sq * env * 0.72;
+    });
+  })();
   htmlSounds.blast = makeSound(0.72, crashFn("blast"));
   htmlSounds.hit = makeSound(0.72, crashFn("hit"));
   htmlSounds.wrong = makeSound(0.16, function (t) {
@@ -393,6 +395,21 @@ function playHit() {
 
 function playZap() {
   playHtml("zap");
+  var ctx = ensureAudio();
+  if (!ctx) return;
+  try {
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.type = "square";
+    osc.frequency.setValueAtTime(1400, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(90, ctx.currentTime + 0.14);
+    gain.gain.setValueAtTime(0.22, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.0001, ctx.currentTime + 0.15);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.16);
+  } catch (e) {}
 }
 
 function playBlast() {
