@@ -1556,3 +1556,13 @@ button.fact-chip {
   max-width: none;
   height: 100%;
 }
+
+
+#screen-start #btn-start {
+  margin-top: auto;
+  margin-bottom: 0;
+}
+#screen-start #btn-facts {
+  margin-top: 16px;
+  margin-bottom: 56px;
+}
