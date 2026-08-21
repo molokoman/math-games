@@ -1811,3 +1811,14 @@ button.fact-chip {
   stroke-linejoin: miter;
   stroke-linecap: square;
 }
+
+
+#screen-end {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+}
+#screen-end > .end-zaps { order: 1 !important; margin: 8px 64px 6px !important; }
+#screen-end > .end-mastery { order: 2 !important; margin: 0 0 12px !important; }
+#screen-end > .intro-city { order: 3 !important; margin-top: 4px !important; margin-bottom: 16px !important; }
+#screen-end > .end-actions { order: 4 !important; margin-top: auto; padding-bottom: 12px; }
