@@ -1112,8 +1112,8 @@ function paintEndFacts() {
   box.innerHTML = "";
   var map = loadFacts();
   (state.waveFacts || []).forEach(function (k) {
-    var row = map[k];
-    box.appendChild(factChip(k, factStatus(row)));
+    var status = (state.previewStatus && state.previewStatus[k]) || factStatus(map[k]);
+    box.appendChild(factChip(k, status));
   });
 }
 
@@ -1265,9 +1265,22 @@ function boot() {
     if (isNaN(round) || round < 0 || round >= ROUND_INFO.length) round = 0;
     startRound(round);
   } else if (shot === "end") {
-    state.zaps = 7;
-    state.roundIndex = 0;
-    state.waveFacts = ["3 + 4", "5 + 2", "8 − 3", "6 + 1", "9 − 4", "2 + 7"];
+    state.zaps = 6;
+    state.roundIndex = 1;
+    state.waveFacts = ["3 + 4", "8 + 5", "6 + 7", "9 + 4", "2 + 8", "5 + 6", "7 + 3", "4 + 9"];
+    state.previewStatus = {
+      "3 + 4": "mastered",
+      "8 + 5": "learning",
+      "6 + 7": "learning",
+      "9 + 4": "mastered",
+      "2 + 8": "struggle",
+      "5 + 6": "learning",
+      "7 + 3": "mastered",
+      "4 + 9": "struggle"
+    };
+    [1, 4].forEach(function (i) {
+      if (cityBuildings[i]) cityBuildings[i].classList.add("wrecked");
+    });
     endRound();
   } else if (shot === "picks") {
     showScreen("screen-picks");
