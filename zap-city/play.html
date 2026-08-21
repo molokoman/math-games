@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#090014" />
   <title>Zap City</title>
   <link rel="icon" href="assets/zip.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="css/zap.css?v=snd76" />
+  <link rel="stylesheet" href="css/zap.css?v=snd77" />
 </head>
 <body>
   <div id="sky" aria-hidden="true"></div>
@@ -55,6 +55,14 @@
 
   <section id="screen-end" class="screen" aria-label="Done" hidden>
     <p id="end-zaps" class="end-zaps" aria-label="Zaps this wave">You zapped <span id="end-zaps-n">0</span><svg class="ico-zap" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 L4 14 H11 L9 22 L20 10 H13 Z"/></svg></p>
+    <div id="end-mastery" class="end-mastery" role="button" tabindex="0" aria-label="Open mastery">
+      <p id="end-key" class="end-key">
+        <span class="fact-chip learning">practiced</span>
+        <span class="fact-chip mastered">★ mastered</span>
+        <span class="fact-chip struggle">needs work</span>
+      </p>
+      <div id="end-facts" class="fact-row" aria-label="Facts"></div>
+    </div>
     <div class="intro-city mini" aria-hidden="true">
       <div class="buildings" id="end-buildings"></div>
       <div class="ground"></div>
@@ -62,14 +70,6 @@
     <div class="end-actions">
       <button id="btn-again" class="btn primary huge" type="button" aria-label="Play again">↻ Again</button>
       <button id="btn-picks" class="btn secondary huge" type="button" aria-label="Choose wave">Choose wave</button>
-      <div id="end-mastery" class="end-mastery" role="button" tabindex="0" aria-label="Open mastery">
-      <p id="end-key" class="end-key">
-        <span class="fact-chip learning">practiced</span>
-        <span class="fact-chip mastered">★ mastered</span>
-        <span class="fact-chip struggle">needs work</span>
-      </p>
-      <div id="end-facts" class="fact-row" aria-label="Facts"></div>
-      </div>
     </div>
   </section>
 
@@ -86,6 +86,6 @@
   </section>
 
   <div id="confetti" aria-hidden="true"></div>
-  <script src="js/zap.js?v=snd76"></script>
+  <script src="js/zap.js?v=snd77"></script>
 </body>
 </html>
