@@ -682,17 +682,7 @@ function renderHud() {
   renderProgress();
 }
 
-function renderTyped() {
-  var el = $("typed");
-  if (!el) return;
-  if (!state.typed) {
-    el.textContent = "";
-    el.classList.add("empty");
-  } else {
-    el.textContent = state.typed;
-    el.classList.remove("empty");
-  }
-}
+function renderTyped() { }
 
 // ---------- fall / laser ----------
 function liveDrops() {
@@ -832,7 +822,7 @@ function maybeFillDrops() {
   var live = liveFalls().length;
   if (state.spawnedCount < QUESTIONS_PER_ROUND && live === 0) {
     spawnDrop("fall");
-  } else if (state.spawnedCount < QUESTIONS_PER_ROUND && canPairSecond() && Math.random() < 0.4) {
+  } else if (state.spawnedCount < QUESTIONS_PER_ROUND && canPairSecond() && Math.random() < 0.55) {
     spawnDrop("fall");
   }
   if (state.spawnedCount >= QUESTIONS_PER_ROUND && !liveDrops().length) {
@@ -1181,16 +1171,10 @@ function onBackspace() {
 
 function shakeWrong() {
   playWrong();
-  var el = $("typed");
-  el.classList.remove("shake");
-  void el.offsetWidth;
-  el.classList.add("shake");
   state.inputLock = true;
   if (state.shakeTimer) clearTimeout(state.shakeTimer);
   state.shakeTimer = window.setTimeout(function () {
     state.typed = "";
-    renderTyped();
-    el.classList.remove("shake");
     state.inputLock = false;
   }, WRONG_CLEAR_MS);
 }
