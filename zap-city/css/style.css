@@ -1074,3 +1074,88 @@ button.fact-chip {
   min-height: 72px;
   font-size: 1.45rem;
 }
+
+
+.ico-shield {
+  width: 1.15em;
+  height: 1.15em;
+  margin-right: 0.4em;
+  display: block;
+  flex-shrink: 0;
+}
+.hue-teal { color: #2ef5ff; }
+.hue-violet { color: #ff3d8a; }
+.hue-blue { color: #7ad7ff; }
+.hue-gold { color: #ffe14a; }
+.b-body {
+  border-radius: 2px;
+  border: 2px solid currentColor;
+  background: #090014 !important;
+  box-shadow: none !important;
+}
+.win {
+  background: transparent !important;
+  border: 1.5px solid currentColor;
+  box-shadow: none !important;
+  border-radius: 0;
+  opacity: 1;
+}
+.ground,
+.intro-city .ground {
+  background: #090014 !important;
+  border-top: 2px solid #2ef5ff;
+  box-shadow: none !important;
+}
+.intro-city { background: transparent !important; }
+.b-spire {
+  width: 2px;
+  height: 11px;
+  margin-left: -1px;
+  background: currentColor;
+  border: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+}
+.building.firing { color: #fff; }
+.building.firing .b-spire { filter: none; background: #fff; }
+.building.wrecked { color: #5a5068; }
+.building.wrecked .b-body { background: #090014 !important; }
+.building.explode .b-boom {
+  background: transparent !important;
+  border: 3px solid #ffe14a;
+  box-shadow: none !important;
+}
+.intro-threat {
+  position: absolute;
+  top: 10%;
+  left: 66%;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ffe14a;
+  background: transparent;
+  z-index: 4;
+}
+.intro-laser {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  pointer-events: none;
+  overflow: visible;
+}
+.intro-laser .beam {
+  stroke: #2ef5ff;
+  stroke-width: 2.4;
+  stroke-linecap: square;
+  fill: none;
+  stroke-dasharray: 90;
+  stroke-dashoffset: 90;
+  animation: intro-laser-draw 1.8s linear infinite;
+}
+@keyframes intro-laser-draw {
+  0% { stroke-dashoffset: 90; opacity: 1; }
+  50% { stroke-dashoffset: 0; opacity: 1; }
+  80%, 100% { stroke-dashoffset: 0; opacity: 0; }
+}
