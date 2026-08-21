@@ -1838,3 +1838,31 @@ button.fact-chip {
 #screen-end {
   padding-top: calc(84px + env(safe-area-inset-top, 0px)) !important;
 }
+
+
+#screen-end.end-scooch {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-evenly !important;
+  align-items: center !important;
+  padding-top: calc(84px + env(safe-area-inset-top, 0px)) !important;
+  padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px)) !important;
+}
+#screen-end.end-scooch > .end-zaps {
+  order: 1 !important;
+  margin: 0 64px !important;
+}
+#screen-end.end-scooch > .end-mastery {
+  order: 2 !important;
+  margin: 0 !important;
+}
+#screen-end.end-scooch > .intro-city {
+  order: 3 !important;
+  margin: 0 !important;
+  height: 148px !important;
+}
+#screen-end.end-scooch > .end-actions {
+  order: 4 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
