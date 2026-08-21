@@ -1725,3 +1725,18 @@ button.fact-chip {
 #typed {
   display: none !important;
 }
+
+
+#screen-end .intro-city.mini {
+  margin-bottom: 22px;
+}
+#screen-end .end-zaps {
+  margin: 8px 0 0;
+}
+#screen-end .end-mastery {
+  margin-top: -6px;
+  padding-top: 0;
+}
+#screen-end #end-key.end-key {
+  margin-top: 4px;
+}
