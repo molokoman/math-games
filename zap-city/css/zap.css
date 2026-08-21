@@ -1024,11 +1024,12 @@ button.fact-chip {
   margin-bottom: 0;
 }
 #screen-start #btn-start {
-  margin-top: 22px;
+  margin-top: 10px;
   margin-bottom: 0;
 }
 #screen-start #btn-facts {
-  margin-top: 0;
+  margin-top: auto;
+  margin-bottom: 28px;
 }
 
 .b-tip { display: none !important; }
@@ -1050,7 +1051,7 @@ button.fact-chip {
 .b-body { top: 18px; }
 .building.firing .b-antenna { filter: brightness(1.8); box-shadow: 0 0 8px #2ef5ff; }
 #screen-start .intro-city { margin-top: 48px; margin-bottom: 0; }
-#screen-start #btn-start { margin-top: auto; margin-bottom: auto; }
+#screen-start #btn-start { margin-top: 10px; margin-bottom: 0; }
 #screen-start #btn-facts { margin-top: 0; }
 
 .b-tip, .b-antenna { display: none !important; }
@@ -1205,4 +1206,35 @@ button.fact-chip {
   opacity: 1;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+
+#screen-start .title {
+  animation: title-hit 1.8s linear infinite;
+}
+#screen-start .title::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 28px;
+  height: 28px;
+  margin: -14px 0 0 -14px;
+  border: 3px solid #ffe14a;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: title-burst 1.8s linear infinite;
+}
+@keyframes title-hit {
+  0%, 48% { transform: scale(1) rotate(0deg); opacity: 1; }
+  52% { transform: scale(1.18) rotate(-6deg); opacity: 1; }
+  60% { transform: scale(0.12) rotate(12deg); opacity: 0; }
+  78% { transform: scale(0.12); opacity: 0; }
+  90% { transform: scale(1.06) rotate(0deg); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes title-burst {
+  0%, 48% { transform: scale(0.3); opacity: 0; }
+  52% { transform: scale(1); opacity: 1; }
+  72% { transform: scale(3.4); opacity: 0; }
+  100% { transform: scale(3.4); opacity: 0; }
 }
