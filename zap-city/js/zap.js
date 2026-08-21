@@ -1263,7 +1263,12 @@ function boot() {
   } else if (shot === "end") {
     state.zaps = 7;
     state.roundIndex = 0;
+    state.waveFacts = ["3 + 4", "5 + 2", "8 − 3", "6 + 1", "9 − 4", "2 + 7"];
     endRound();
+  } else if (shot === "picks") {
+    showScreen("screen-picks");
+  } else if (shot === "facts") {
+    openFacts("screen-start");
   }
 }
 
