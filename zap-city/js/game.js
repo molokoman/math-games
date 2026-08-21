@@ -684,8 +684,9 @@ function renderHud() {
 
 function renderTyped() {
   var el = $("typed");
+  if (!el) return;
   if (!state.typed) {
-    el.textContent = "?";
+    el.textContent = "";
     el.classList.add("empty");
   } else {
     el.textContent = state.typed;

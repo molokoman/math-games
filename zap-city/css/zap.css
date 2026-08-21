@@ -1508,3 +1508,51 @@ button.fact-chip {
   min-height: 64px;
   z-index: 3;
 }
+
+
+#screen-game.active {
+  padding: 0 8px 6px;
+  padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+}
+#screen-game .playfield {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+  border: 2px solid #2ef5ff;
+  border-radius: 4px;
+}
+#screen-game .typed.empty {
+  display: none;
+}
+#screen-game .typed {
+  font-size: 1.7rem;
+  margin: 4px 0 2px;
+  min-height: 0;
+  text-shadow: none;
+}
+#screen-game .dock {
+  padding-top: 4px;
+}
+#screen-game .city {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 92px;
+  overflow: hidden;
+}
+#screen-game .ground {
+  border-top: none !important;
+  height: 6px;
+  background: #090014 !important;
+}
+#screen-game .buildings {
+  left: 8px;
+  right: 8px;
+  bottom: 6px;
+  top: 4px;
+}
+#screen-game .building {
+  max-width: none;
+  height: 100%;
+}
