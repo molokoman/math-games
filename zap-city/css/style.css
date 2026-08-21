@@ -1304,11 +1304,11 @@ button.fact-chip {
 
 #screen-start #btn-start {
   margin-top: auto;
-  margin-bottom: auto;
+  margin-bottom: 0;
 }
 #screen-start #btn-facts {
-  margin-top: auto;
-  margin-bottom: 20px;
+  margin-top: 16px;
+  margin-bottom: 36px;
 }
 
 #screen-picks .round-grid {
