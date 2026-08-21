@@ -954,3 +954,14 @@ button, input, a { font: inherit; color: inherit; }
   width: 100%;
   max-width: 320px;
 }
+
+#screen-picks #btn-picks-back {
+  margin-top: auto;
+  width: 100%;
+  max-width: 320px;
+}
+#screen-facts #btn-facts-back {
+  margin-top: auto;
+  width: 100%;
+  max-width: 320px;
+}
