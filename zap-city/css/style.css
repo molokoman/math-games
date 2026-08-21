@@ -273,9 +273,10 @@ button, input, a { font: inherit; color: inherit; }
 
 .round-grid {
   width: 100%;
+  max-width: 320px;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: 1fr;
+  gap: 10px;
   margin: 10px 0 18px;
 }
 .round-card {
@@ -756,7 +757,7 @@ button, input, a { font: inherit; color: inherit; }
 @media (min-width: 720px) {
   .screen { padding-top: 28px; }
   #screen-start, #screen-end { padding-top: 36px; }
-  .round-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .round-grid { grid-template-columns: 1fr; }
   .playfield { min-height: 280px; }
   .city { height: 128px; }
   .building { max-width: 56px; }
@@ -957,7 +958,7 @@ button.fact-chip {
 
 #screen-picks,
 #screen-facts {
-  padding-top: 72px;
+  padding-top: calc(96px + env(safe-area-inset-top, 0px));
 }
 .btn-nav-back {
   width: 100%;
