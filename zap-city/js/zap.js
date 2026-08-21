@@ -271,43 +271,27 @@ function noise01(i, seed) {
   return (x - Math.floor(x)) * 2 - 1;
 }
 
-function nesBoomFn(kind) {
-  // NES APU noise: 15-bit LFSR, period table, 16-step volume (Mario / Zelda / Mega Man boom)
-  var reg = 1;
+function atariBoomFn(kind) {
+  var reg = 9;
   var hold = 1;
   var left = 0;
-  var long = kind === "hit";
-  var table = long
-    ? [16, 32, 64, 96, 128, 160, 202, 254, 380, 508, 762]
-    : [8, 16, 32, 64, 96, 128, 160, 202, 254];
-  var dur = long ? 0.46 : 0.26;
-  return function (t) {
-    var idx = Math.min(table.length - 1, Math.floor((t / dur) * table.length));
-    var period = table[idx];
-    var cps = 1789773 / (period * 22050);
-    if (cps >= 1) {
-      var clocks = Math.max(1, Math.round(cps));
-      for (var c = 0; c < clocks; c++) {
-        var bit = (reg ^ (reg >> 1)) & 1;
-        reg = (reg >> 1) | (bit << 14);
-      }
+  var drop = kind === "hit" ? 1.7 : 1.35;
+  var fade = kind === "hit" ? 4.2 : 6.4;
+  return function (t, i) {
+    var period = 1 + Math.floor(Math.pow(Math.min(1, t * 1.8), drop) * 52);
+    if (left <= 0) {
+      var bit = (reg ^ (reg >> 1)) & 1;
+      reg = ((reg >> 1) | (bit << 3)) & 15;
+      if (!reg) reg = 1;
       hold = (reg & 1) ? 1 : -1;
-    } else if (left <= 0) {
-      var bit2 = (reg ^ (reg >> 1)) & 1;
-      reg = (reg >> 1) | (bit2 << 14);
-      hold = (reg & 1) ? 1 : -1;
-      left = Math.max(1, Math.round(1 / cps));
-    } else {
-      left--;
+      left = period;
     }
-    var step = Math.max(0, 15 - Math.floor((t / dur) * 16));
-    var env = step / 15;
-    var kick = 0;
-    if (t < 0.055) {
-      var kf = long ? 96 : 128;
-      kick = (Math.sin(t * kf * 6.283) >= 0 ? 1 : -1) * (1 - t / 0.055) * (long ? 0.4 : 0.26);
-    }
-    return hold * env * 0.9 + kick;
+    left--;
+    var env = Math.exp(-t * fade);
+    var crack = t < 0.012 ? ((i & 2) ? 1 : -1) * (1 - t / 0.012) * 0.85 : 0;
+    var thumpF = 120 * Math.pow(36 / 120, Math.min(1, t / 0.2));
+    var thump = (Math.sin(t * thumpF * 6.283) >= 0 ? 1 : -1) * Math.exp(-t * 8.5) * 0.38;
+    return hold * env * 0.9 + crack + thump;
   };
 }
 
@@ -323,8 +307,8 @@ function buildSounds() {
       return sq * env * 0.72;
     });
   })();
-  htmlSounds.blast = makeSound(0.26, nesBoomFn("blast"));
-  htmlSounds.hit = makeSound(0.46, nesBoomFn("hit"));
+  htmlSounds.blast = makeSound(0.32, atariBoomFn("blast"));
+  htmlSounds.hit = makeSound(0.52, atariBoomFn("hit"));
   htmlSounds.wrong = makeSound(0.16, function (t) {
     var env = Math.max(0, 1 - t / 0.16);
     return Math.sin(t * (240 - t * 700) * 6.283) * 0.35 * env;
@@ -346,10 +330,11 @@ function playHtml(name) {
   var a = htmlSounds[name];
   if (!a) return;
   try {
-    var n = a.cloneNode();
-    n.muted = false;
-    n.volume = 1;
-    var p = n.play();
+    a.muted = false;
+    a.volume = 1;
+    a.pause();
+    a.currentTime = 0;
+    var p = a.play();
     if (p && p.catch) p.catch(function () {});
   } catch (e) {}
 }
@@ -426,6 +411,21 @@ function playHit() {
 
 function playZap() {
   playHtml("zap");
+  var ctx = ensureAudio();
+  if (!ctx) return;
+  try {
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.type = "square";
+    osc.frequency.setValueAtTime(1400, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(90, ctx.currentTime + 0.14);
+    gain.gain.setValueAtTime(0.22, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.0001, ctx.currentTime + 0.15);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.16);
+  } catch (e) {}
 }
 
 function playBlast() {
