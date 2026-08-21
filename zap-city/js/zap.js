@@ -650,7 +650,7 @@ function fireLaser(card, building) {
   if (!building) return;
   var fieldEl = $("playfield");
   var field = fieldEl.getBoundingClientRect();
-  var tipEl = building.querySelector(".b-tip") || building;
+  var tipEl = building.querySelector(".b-body") || building;
   var tip = tipEl.getBoundingClientRect();
   var tgt = card.getBoundingClientRect();
   var layer = $("laser-layer");
