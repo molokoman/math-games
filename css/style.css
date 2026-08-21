@@ -245,7 +245,8 @@ button, input { font: inherit; color: inherit; }
   accent-color: var(--gold);
 }
 
-#link-zap-city {
+#link-zap-city,
+#link-lily-hop {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -253,6 +254,13 @@ button, input { font: inherit; color: inherit; }
   min-width: auto;
   text-decoration: none;
 }
+.more-games {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 8px;
+}
+.more-games .btn { margin-top: 10px; }
 
 /* ===== HUD / game ===== */
 .hud {

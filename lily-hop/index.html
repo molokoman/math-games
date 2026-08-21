@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
+  <meta name="color-scheme" content="light" />
+  <meta name="theme-color" content="#4eb8c4" />
+  <title>Lily Hop</title>
+  <link rel="icon" href="assets/lily.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="css/lily.css?v=lh1" />
+  <!--
+    Lily Hop — a local math game for ages ~7.
+    Open this file by double-clicking it. No internet or install needed.
+    A frog hops across a pond. Tap the lily pad that equals the number on top.
+  -->
+</head>
+<body>
+  <div id="world" aria-hidden="true">
+    <div class="sky"></div>
+    <div class="hills"></div>
+    <div class="water">
+      <span class="ripple r1"></span>
+      <span class="ripple r2"></span>
+      <span class="ripple r3"></span>
+    </div>
+    <div class="reed reed-l"></div>
+    <div class="reed reed-r"></div>
+  </div>
+
+  <button id="btn-mute" class="icon-btn" type="button" aria-pressed="false" aria-label="Sound is on. Tap to mute.">
+    <span class="icon-sound" data-on="🔊" data-off="🔇">🔊</span>
+  </button>
+
+  <section id="screen-start" class="screen active" aria-label="Start">
+    <h1 class="title">Lily Hop</h1>
+    <div class="hero-wrap" aria-hidden="true">
+      <div class="home-pad"></div>
+      <div class="hero mood-idle" data-frog><svg class="frog-svg" viewBox="0 0 140 120" role="img" aria-hidden="true">
+  <ellipse class="frog-shadow" cx="70" cy="112" rx="34" ry="6" fill="#1a4a40" opacity="0.22"/>
+  <ellipse cx="34" cy="96" rx="18" ry="9" fill="#3d9a32"/>
+  <ellipse cx="106" cy="96" rx="18" ry="9" fill="#3d9a32"/>
+  <ellipse cx="70" cy="68" rx="44" ry="32" fill="#5ec24a"/>
+  <ellipse cx="70" cy="76" rx="26" ry="18" fill="#d8f48c"/>
+  <circle cx="46" cy="38" r="18" fill="#5ec24a"/>
+  <circle cx="94" cy="38" r="18" fill="#5ec24a"/>
+  <circle cx="46" cy="36" r="10" fill="#fffef2"/>
+  <circle cx="94" cy="36" r="10" fill="#fffef2"/>
+  <circle class="pupil l" cx="48" cy="37" r="5.2" fill="#1a3320"/>
+  <circle class="pupil r" cx="96" cy="37" r="5.2" fill="#1a3320"/>
+  <circle cx="50" cy="34" r="1.8" fill="#fff"/>
+  <circle cx="98" cy="34" r="1.8" fill="#fff"/>
+  <path class="mouth smile" d="M56 80 Q70 92 84 80" fill="none" stroke="#1a3320" stroke-width="4" stroke-linecap="round"/>
+  <ellipse class="mouth oops" cx="70" cy="84" rx="8" ry="7" fill="#1a3320"/>
+</svg></div>
+    </div>
+    <p class="how">Tap the pad that matches</p>
+    <button id="btn-start" class="btn primary huge" type="button">Hop</button>
+  </section>
+
+  <section id="screen-picks" class="screen" aria-label="Pick a wave" hidden>
+    <h2 class="title small">Pick a pond</h2>
+    <div class="round-grid" id="round-picks"></div>
+    <button type="button" class="btn ghost huge btn-back" data-back="picks" aria-label="Back">Back</button>
+  </section>
+
+  <section id="screen-game" class="screen" aria-label="Game" hidden>
+    <header class="hud">
+      <div class="hop-pips" id="hop-pips" aria-label="Hops"></div>
+      <div class="wave-chip" id="wave-chip">Addition 10</div>
+    </header>
+    <div class="target-sign" aria-live="polite">
+      <p class="target-label">Hop to</p>
+      <p class="target-num" id="target">8</p>
+    </div>
+    <div id="pond" class="pond">
+      <div class="far-bank" aria-hidden="true">
+        <span class="grass"></span>
+        <span class="cattail a"></span>
+        <span class="cattail b"></span>
+        <span class="flower"></span>
+      </div>
+      <div id="pads" class="pads" role="group" aria-label="Lily pads"></div>
+      <div id="frog" class="frog mood-idle" data-frog><svg class="frog-svg" viewBox="0 0 140 120" role="img" aria-hidden="true">
+  <ellipse class="frog-shadow" cx="70" cy="112" rx="34" ry="6" fill="#1a4a40" opacity="0.22"/>
+  <ellipse cx="34" cy="96" rx="18" ry="9" fill="#3d9a32"/>
+  <ellipse cx="106" cy="96" rx="18" ry="9" fill="#3d9a32"/>
+  <ellipse cx="70" cy="68" rx="44" ry="32" fill="#5ec24a"/>
+  <ellipse cx="70" cy="76" rx="26" ry="18" fill="#d8f48c"/>
+  <circle cx="46" cy="38" r="18" fill="#5ec24a"/>
+  <circle cx="94" cy="38" r="18" fill="#5ec24a"/>
+  <circle cx="46" cy="36" r="10" fill="#fffef2"/>
+  <circle cx="94" cy="36" r="10" fill="#fffef2"/>
+  <circle class="pupil l" cx="48" cy="37" r="5.2" fill="#1a3320"/>
+  <circle class="pupil r" cx="96" cy="37" r="5.2" fill="#1a3320"/>
+  <circle cx="50" cy="34" r="1.8" fill="#fff"/>
+  <circle cx="98" cy="34" r="1.8" fill="#fff"/>
+  <path class="mouth smile" d="M56 80 Q70 92 84 80" fill="none" stroke="#1a3320" stroke-width="4" stroke-linecap="round"/>
+  <ellipse class="mouth oops" cx="70" cy="84" rx="8" ry="7" fill="#1a3320"/>
+</svg></div>
+      <div class="near-bank" aria-hidden="true"></div>
+      <div id="fx" class="fx" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  <section id="screen-end" class="screen" aria-label="You crossed" hidden>
+    <h2 class="title small">You crossed!</h2>
+    <div class="hero-wrap" aria-hidden="true">
+      <div class="home-pad"></div>
+      <div class="hero mood-yay" data-frog><svg class="frog-svg" viewBox="0 0 140 120" role="img" aria-hidden="true">
+  <ellipse class="frog-shadow" cx="70" cy="112" rx="34" ry="6" fill="#1a4a40" opacity="0.22"/>
+  <ellipse cx="34" cy="96" rx="18" ry="9" fill="#3d9a32"/>
+  <ellipse cx="106" cy="96" rx="18" ry="9" fill="#3d9a32"/>
+  <ellipse cx="70" cy="68" rx="44" ry="32" fill="#5ec24a"/>
+  <ellipse cx="70" cy="76" rx="26" ry="18" fill="#d8f48c"/>
+  <circle cx="46" cy="38" r="18" fill="#5ec24a"/>
+  <circle cx="94" cy="38" r="18" fill="#5ec24a"/>
+  <circle cx="46" cy="36" r="10" fill="#fffef2"/>
+  <circle cx="94" cy="36" r="10" fill="#fffef2"/>
+  <circle class="pupil l" cx="48" cy="37" r="5.2" fill="#1a3320"/>
+  <circle class="pupil r" cx="96" cy="37" r="5.2" fill="#1a3320"/>
+  <circle cx="50" cy="34" r="1.8" fill="#fff"/>
+  <circle cx="98" cy="34" r="1.8" fill="#fff"/>
+  <path class="mouth smile" d="M56 80 Q70 92 84 80" fill="none" stroke="#1a3320" stroke-width="4" stroke-linecap="round"/>
+  <ellipse class="mouth oops" cx="70" cy="84" rx="8" ry="7" fill="#1a3320"/>
+</svg></div>
+    </div>
+    <p id="end-line" class="end-line">6 hops across the pond</p>
+    <div class="end-actions">
+      <button id="btn-again" class="btn primary huge" type="button">Again</button>
+      <button id="btn-picks" class="btn secondary huge" type="button">Choose wave</button>
+    </div>
+  </section>
+
+  <script src="js/lily.js?v=lh1"></script>
+</body>
+</html>
