@@ -245,6 +245,15 @@ button, input { font: inherit; color: inherit; }
   accent-color: var(--gold);
 }
 
+#link-zap-city {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 18px;
+  min-width: auto;
+  text-decoration: none;
+}
+
 /* ===== HUD / game ===== */
 .hud {
   width: 100%;

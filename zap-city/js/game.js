@@ -1,0 +1,608 @@
+/**
+ * Zap City — local math game for late 1st / early 2nd grade (~age 7).
+ * Open this folder’s index.html (or Star Quest at ../). No server, no login.
+ *
+ * A math problem falls toward the city. The kid types the answer on a
+ * number pad. Correct: Zip the turret zaps it. If it lands, the city
+ * loses a heart (kind voice) and we keep going. 8 problems per round.
+ */
+
+// ========== TWEAK THESE ==========
+var QUESTIONS_PER_ROUND = 8;
+var STARTING_HEARTS = 3;
+var FALL_MS = 12000;        // default generous fall — several seconds to think + tap
+var SLOW_FALL_MS = 14500;   // round 1
+var SPEED_FALL_MS = 8400;   // ~70% of FALL_MS
+var ZAP_ANIM_MS = 400;      // laser + pop
+var WRONG_CLEAR_MS = 300;   // shake, then clear typed digits
+var HIT_PAUSE_MS = 1050;    // kind pause after a rooftop bonk
+var NEXT_PAUSE_MS = 520;    // breath after a zap before the next fall
+// =================================
+
+var ROUND_INFO = [
+  { id: 1, name: "Plus to 10",  blurb: "Add up to 10",         kind: "add10", fall: "slow" },
+  { id: 2, name: "Plus to 20",  blurb: "Add up to 20",         kind: "add20", fall: "norm" },
+  { id: 3, name: "Take Away",   blurb: "Subtract from 10",     kind: "sub10", fall: "norm" },
+  { id: 4, name: "Mix It Up",   blurb: "Plus and minus to 20", kind: "mix20", fall: "norm" },
+  { id: 5, name: "Speed Round", blurb: "A little faster",      kind: "mix20", fall: "fast" }
+];
+
+var NICE = ["Zap!", "Nice shot!", "Zip zapped it!", "Yes!", "Got it!", "Super zap!"];
+var HIT = [
+  "Whoops — rooftop bonk. The city is okay!",
+  "Easy, Zip. We’ve still got this.",
+  "A little bump. Keep zapping!",
+  "The city shook, but you’re still the hero."
+];
+
+var state = {
+  roundIndex: 0,
+  qIndex: 0,
+  hearts: STARTING_HEARTS,
+  zaps: 0,
+  results: [],
+  current: null,
+  typed: "",
+  locked: false,
+  inputLock: false,
+  muted: false,
+  asked: [],
+  card: null,
+  fallTimer: null,
+  shakeTimer: null,
+  reduceMotion: false
+};
+
+var audioCtx = null;
+
+// ---------- tiny helpers ----------
+function $(id) { return document.getElementById(id); }
+function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function uniqueKey(q) { return q.prompt + "=" + q.answer; }
+
+function prefersReduce() {
+  try {
+    return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  } catch (e) {
+    return false;
+  }
+}
+
+function fallDuration() {
+  var mode = ROUND_INFO[state.roundIndex].fall;
+  if (mode === "slow") return SLOW_FALL_MS;
+  if (mode === "fast") return SPEED_FALL_MS;
+  return FALL_MS;
+}
+
+// ---------- questions (same bands as Star Quest; no 0+n, no n−0, no negatives) ----------
+function makeAdd(maxSum, minSum) {
+  minSum = minSum == null ? 4 : minSum;
+  var sum = rand(minSum, maxSum);
+  var a = rand(1, Math.max(1, sum - 1));
+  var b = sum - a;
+  return { prompt: a + " + " + b, answer: sum };
+}
+
+function makeSub(maxMinuend, minMinuend) {
+  minMinuend = minMinuend == null ? 3 : minMinuend;
+  var a = rand(minMinuend, maxMinuend);
+  var b = rand(1, a);
+  return { prompt: a + " − " + b, answer: a - b };
+}
+
+function nextQuestion(kind) {
+  var q, tries = 0;
+  do {
+    if (kind === "add10") q = makeAdd(10, 4);
+    else if (kind === "add20") q = makeAdd(20, 10);
+    else if (kind === "sub10") q = makeSub(10, 4);
+    else q = Math.random() < 0.55 ? makeAdd(20, 6) : makeSub(20, 6);
+    tries++;
+  } while (state.asked.indexOf(uniqueKey(q)) !== -1 && tries < 30);
+  state.asked.push(uniqueKey(q));
+  return q;
+}
+
+// ---------- audio (Web Audio beeps — no files) ----------
+function ensureAudio() {
+  if (state.muted) return null;
+  try {
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    if (!audioCtx) audioCtx = new AC();
+    if (audioCtx.state === "suspended") audioCtx.resume();
+    return audioCtx;
+  } catch (e) {
+    return null;
+  }
+}
+
+function beep(freq, dur, type, when, vol) {
+  var ctx = ensureAudio();
+  if (!ctx) return;
+  var osc = ctx.createOscillator();
+  var gain = ctx.createGain();
+  osc.type = type || "sine";
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0.0001, ctx.currentTime + when);
+  gain.gain.exponentialRampToValueAtTime(vol || 0.16, ctx.currentTime + when + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + when + dur);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(ctx.currentTime + when);
+  osc.stop(ctx.currentTime + when + dur + 0.02);
+}
+
+function playZap() {
+  beep(440, 0.07, "square", 0, 0.09);
+  beep(784, 0.09, "square", 0.06, 0.11);
+  beep(1174, 0.14, "triangle", 0.13, 0.12);
+}
+function playWrong() {
+  beep(196, 0.16, "sine", 0, 0.08);
+  beep(165, 0.18, "sine", 0.1, 0.07);
+}
+function playHit() {
+  beep(180, 0.2, "sine", 0, 0.07);
+  beep(140, 0.24, "sine", 0.12, 0.06);
+}
+
+function setMuted(on) {
+  state.muted = !!on;
+  var btn = $("btn-mute");
+  btn.setAttribute("aria-pressed", state.muted ? "true" : "false");
+  btn.setAttribute("aria-label", state.muted ? "Sound is off. Tap to unmute." : "Sound is on. Tap to mute.");
+  btn.querySelector(".icon-sound").textContent = state.muted ? "🔇" : "🔊";
+  try { localStorage.setItem("zapcity-muted", state.muted ? "1" : "0"); } catch (e) {}
+}
+
+// ---------- screens ----------
+function showScreen(id) {
+  ["screen-start", "screen-game", "screen-end"].forEach(function (sid) {
+    var el = $(sid);
+    var on = sid === id;
+    el.classList.toggle("active", on);
+    if (on) el.removeAttribute("hidden");
+    else el.setAttribute("hidden", "");
+  });
+}
+
+function say(which, text) {
+  var el = $("speech-" + which);
+  if (el) el.textContent = text;
+}
+
+function setZipMood(mood) {
+  document.querySelectorAll("[data-zip]").forEach(function (h) {
+    h.classList.remove("mood-wave", "mood-think", "mood-yay", "mood-oops", "mood-idle");
+    h.classList.add("mood-" + mood);
+  });
+}
+
+function buildRoundPicks(intoId, onPick) {
+  var box = $(intoId);
+  box.innerHTML = "";
+  ROUND_INFO.forEach(function (r, i) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "round-card";
+    b.innerHTML = "<strong>Round " + r.id + "</strong><span>" + r.name + "</span>";
+    b.addEventListener("click", function () { onPick(i); });
+    box.appendChild(b);
+  });
+}
+
+function paintSky() {
+  var sky = $("sky");
+  sky.innerHTML = "";
+  for (var i = 0; i < 52; i++) {
+    var d = document.createElement("div");
+    d.className = "sky-dot";
+    d.style.left = Math.random() * 100 + "%";
+    d.style.top = Math.random() * 100 + "%";
+    d.style.animationDelay = (Math.random() * 2.8) + "s";
+    d.style.width = d.style.height = (Math.random() * 3 + 2) + "px";
+    sky.appendChild(d);
+  }
+}
+
+function buildPad() {
+  var box = $("pad");
+  box.innerHTML = "";
+  var keys = [1, 2, 3, 4, 5, 6, 7, 8, 9, "back", 0, "deco"];
+  keys.forEach(function (k) {
+    if (k === "deco") {
+      var s = document.createElement("div");
+      s.className = "pad-key deco";
+      s.setAttribute("aria-hidden", "true");
+      s.textContent = "⚡";
+      box.appendChild(s);
+      return;
+    }
+    var b = document.createElement("button");
+    b.type = "button";
+    if (k === "back") {
+      b.className = "pad-key back";
+      b.setAttribute("aria-label", "Backspace");
+      b.textContent = "⌫";
+      b.addEventListener("click", function () { onBackspace(); });
+    } else {
+      b.className = "pad-key";
+      b.textContent = String(k);
+      b.addEventListener("click", function () { onDigit(String(k)); });
+    }
+    box.appendChild(b);
+  });
+}
+
+function setPadEnabled(on) {
+  $("pad").querySelectorAll("button").forEach(function (b) { b.disabled = !on; });
+}
+
+// ---------- HUD ----------
+function renderHearts() {
+  var html = "";
+  for (var i = 0; i < STARTING_HEARTS; i++) {
+    html += '<span class="heart' + (i < state.hearts ? "" : " lost") + '" aria-hidden="true">♥</span>';
+  }
+  $("hearts").innerHTML = html;
+  $("hearts").setAttribute("aria-label", state.hearts + " city hearts left");
+}
+
+function renderProgress() {
+  var html = "";
+  for (var i = 0; i < QUESTIONS_PER_ROUND; i++) {
+    var cls = "pip";
+    if (i < state.results.length) cls += state.results[i] === "zap" ? " done" : " miss";
+    else if (i === state.qIndex) cls += " now";
+    html += '<span class="' + cls + '"></span>';
+  }
+  $("progress").innerHTML = html;
+}
+
+function renderHud() {
+  var info = ROUND_INFO[state.roundIndex];
+  $("round-chip").textContent = "R" + info.id + " · " + info.name;
+  renderHearts();
+  renderProgress();
+}
+
+function renderTyped() {
+  var el = $("typed");
+  if (!state.typed) {
+    el.textContent = "?";
+    el.classList.add("empty");
+  } else {
+    el.textContent = state.typed;
+    el.classList.remove("empty");
+  }
+}
+
+// ---------- fall / laser ----------
+function clearFallTimer() {
+  if (state.fallTimer) {
+    clearTimeout(state.fallTimer);
+    state.fallTimer = null;
+  }
+  if (state.card) {
+    state.card.removeEventListener("animationend", onFallEnd);
+  }
+}
+
+function clearLaser() {
+  var line = $("laser-beam");
+  if (line) {
+    line.classList.remove("firing");
+    line.setAttribute("x1", "0");
+    line.setAttribute("y1", "0");
+    line.setAttribute("x2", "0");
+    line.setAttribute("y2", "0");
+  }
+  $("turret").classList.remove("firing");
+}
+
+function stopFalling() {
+  clearFallTimer();
+  $("problems").innerHTML = "";
+  state.card = null;
+  clearLaser();
+  $("city").classList.remove("bonk");
+}
+
+function onFallEnd(e) {
+  if (e && e.animationName && e.animationName !== "problem-fall") return;
+  onCityHit();
+}
+
+function fireLaser(card) {
+  if (state.reduceMotion) return;
+  var fieldEl = $("playfield");
+  var field = fieldEl.getBoundingClientRect();
+  var tip = $("turret").getBoundingClientRect();
+  var tgt = card.getBoundingClientRect();
+  var layer = $("laser-layer");
+  layer.setAttribute("viewBox", "0 0 " + Math.max(1, field.width) + " " + Math.max(1, field.height));
+  var x1 = tip.left + tip.width / 2 - field.left;
+  var y1 = tip.top + 6 - field.top;
+  var x2 = tgt.left + tgt.width / 2 - field.left;
+  var y2 = tgt.top + tgt.height / 2 - field.top;
+  var line = $("laser-beam");
+  line.setAttribute("x1", String(x1));
+  line.setAttribute("y1", String(y1));
+  line.setAttribute("x2", String(x2));
+  line.setAttribute("y2", String(y2));
+  line.classList.add("firing");
+  $("turret").classList.add("firing");
+}
+
+function spawnProblem() {
+  state.typed = "";
+  state.locked = false;
+  state.inputLock = false;
+  renderTyped();
+  renderHud();
+  setPadEnabled(true);
+  clearLaser();
+  $("city").classList.remove("bonk");
+
+  var box = $("problems");
+  box.innerHTML = "";
+  var card = document.createElement("div");
+  card.className = "falling-problem";
+  card.textContent = state.current.prompt;
+  box.appendChild(card);
+
+  var field = $("playfield");
+  var cityH = $("city").offsetHeight || 72;
+  var maxLeft = Math.max(8, field.clientWidth - card.offsetWidth - 8);
+  card.style.left = rand(8, maxLeft) + "px";
+  var dist = field.clientHeight - cityH - card.offsetHeight - 10;
+  if (dist < 36) dist = 36;
+  card.style.setProperty("--fall-distance", dist + "px");
+  state.card = card;
+
+  var ms = fallDuration();
+  if (state.reduceMotion) {
+    card.style.transform = "translate3d(0, " + Math.round(dist * 0.22) + "px, 0)";
+    state.fallTimer = window.setTimeout(function () { onCityHit(); }, ms);
+  } else {
+    card.style.animationDuration = ms + "ms";
+    card.addEventListener("animationend", onFallEnd);
+  }
+
+  setZipMood("think");
+  var info = ROUND_INFO[state.roundIndex];
+  if (state.qIndex === 0) {
+    say("game", info.fall === "fast" ? "A little faster — you’ve got this!" : "Type the answer to zap them!");
+  } else {
+    say("game", pick(["Type the answer!", "Zap it!", "You’ve got this!"]));
+  }
+}
+
+function startRound(index) {
+  stopFalling();
+  state.roundIndex = index;
+  state.qIndex = 0;
+  state.hearts = STARTING_HEARTS;
+  state.zaps = 0;
+  state.results = [];
+  state.asked = [];
+  state.typed = "";
+  state.locked = true;
+  state.current = nextQuestion(ROUND_INFO[index].kind);
+  showScreen("screen-game");
+  setZipMood("think");
+  renderHud();
+  renderTyped();
+  // two frames so the playfield has a real height before we measure the fall
+  requestAnimationFrame(function () {
+    requestAnimationFrame(spawnProblem);
+  });
+}
+
+function burstConfetti() {
+  var layer = $("confetti");
+  var bits = ["✦", "⚡", "★", "✶", "✨"];
+  for (var i = 0; i < 16; i++) {
+    var el = document.createElement("div");
+    el.className = "confetti-bit";
+    el.textContent = pick(bits);
+    el.style.left = Math.random() * 100 + "%";
+    el.style.animationDelay = (Math.random() * 0.15) + "s";
+    el.style.fontSize = (16 + Math.random() * 18) + "px";
+    layer.appendChild(el);
+    window.setTimeout(function (node) { return function () { node.remove(); }; }(el), 1500);
+  }
+}
+
+function zapCorrect() {
+  if (state.locked) return;
+  state.locked = true;
+  setPadEnabled(false);
+  clearFallTimer();
+  state.zaps += 1;
+  state.results.push("zap");
+  playZap();
+  burstConfetti();
+  setZipMood("yay");
+  say("game", pick(NICE));
+  renderHud();
+
+  var card = state.card;
+  if (card && !state.reduceMotion) {
+    card.style.animationPlayState = "paused";
+    var field = $("playfield").getBoundingClientRect();
+    var cardR = card.getBoundingClientRect();
+    card.style.setProperty("--hold-y", (cardR.top - field.top - 8) + "px");
+    fireLaser(card);
+    window.setTimeout(function () {
+      if (state.card === card) card.classList.add("pop");
+      clearLaser();
+    }, 150);
+  } else if (card) {
+    card.classList.add("pop");
+  }
+
+  window.setTimeout(advance, ZAP_ANIM_MS + NEXT_PAUSE_MS);
+}
+
+function onCityHit() {
+  if (state.locked) return;
+  state.locked = true;
+  setPadEnabled(false);
+  clearFallTimer();
+  playHit();
+  setZipMood("oops");
+  var city = $("city");
+  city.classList.remove("bonk");
+  void city.offsetWidth;
+  city.classList.add("bonk");
+  if (state.hearts > 0) state.hearts -= 1;
+  state.results.push("miss");
+  if (state.card) {
+    state.card.classList.remove("shake");
+    void state.card.offsetWidth;
+    state.card.classList.add("shake");
+  }
+  renderHud();
+  say("game", pick(HIT));
+  window.setTimeout(advance, HIT_PAUSE_MS);
+}
+
+function advance() {
+  stopFalling();
+  state.qIndex += 1;
+  if (state.qIndex >= QUESTIONS_PER_ROUND) {
+    endRound();
+    return;
+  }
+  state.current = nextQuestion(ROUND_INFO[state.roundIndex].kind);
+  spawnProblem();
+}
+
+function endRound() {
+  stopFalling();
+  showScreen("screen-end");
+  setZipMood("yay");
+  var total = QUESTIONS_PER_ROUND;
+  var earned = state.zaps;
+  $("end-zaps").textContent = earned + " zap" + (earned === 1 ? "" : "s") + " out of " + total;
+  var msg;
+  if (earned === total) msg = "Perfect night! Zip is so proud!";
+  else if (earned >= total - 2) msg = "Wow! You zapped so many!";
+  else if (earned >= 3) msg = "The city is safe. Great defending!";
+  else msg = "You showed up for the city. Try this round again!";
+  if (state.hearts <= 0 && earned < total) {
+    msg = "The city is resting. You still scored " + earned + " zap" + (earned === 1 ? "" : "s") + "!";
+  }
+  say("end", msg);
+  $("btn-next").hidden = state.roundIndex >= ROUND_INFO.length - 1;
+}
+
+// ---------- pad input ----------
+function onDigit(d) {
+  if (state.locked || state.inputLock || !state.current) return;
+  if (!$("screen-game").classList.contains("active")) return;
+  var next = state.typed + d;
+  var target = String(state.current.answer);
+  state.typed = next;
+  renderTyped();
+  if (next === target) {
+    zapCorrect();
+    return;
+  }
+  // cannot be the start of the right answer (also covers same-length wrong)
+  if (target.indexOf(next) !== 0) {
+    shakeWrong();
+  }
+}
+
+function onBackspace() {
+  if (state.locked || state.inputLock) return;
+  if (!state.typed) return;
+  state.typed = state.typed.slice(0, -1);
+  renderTyped();
+}
+
+function shakeWrong() {
+  playWrong();
+  var el = $("typed");
+  el.classList.remove("shake");
+  void el.offsetWidth;
+  el.classList.add("shake");
+  state.inputLock = true;
+  if (state.shakeTimer) clearTimeout(state.shakeTimer);
+  state.shakeTimer = window.setTimeout(function () {
+    state.typed = "";
+    renderTyped();
+    el.classList.remove("shake");
+    state.inputLock = false;
+  }, WRONG_CLEAR_MS);
+}
+
+function onKey(e) {
+  if (e.repeat) return;
+  if (e.key === "m" || e.key === "M") {
+    setMuted(!state.muted);
+    return;
+  }
+  if (!$("screen-game").classList.contains("active")) return;
+  if (e.key === "Backspace") {
+    e.preventDefault();
+    onBackspace();
+    return;
+  }
+  if (e.key >= "0" && e.key <= "9") onDigit(e.key);
+}
+
+// ---------- boot ----------
+function boot() {
+  state.reduceMotion = prefersReduce();
+  if (window.matchMedia) {
+    try {
+      var mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+      var onChange = function (e) { state.reduceMotion = !!(e && e.matches); };
+      if (mq.addEventListener) mq.addEventListener("change", onChange);
+      else if (mq.addListener) mq.addListener(onChange);
+    } catch (err) {}
+  }
+
+  paintSky();
+  buildPad();
+  buildRoundPicks("round-picks", startRound);
+  $("btn-start").addEventListener("click", function () { startRound(0); });
+  $("btn-again").addEventListener("click", function () { startRound(state.roundIndex); });
+  $("btn-next").addEventListener("click", function () {
+    startRound(Math.min(state.roundIndex + 1, ROUND_INFO.length - 1));
+  });
+  $("btn-picks").addEventListener("click", function () {
+    stopFalling();
+    showScreen("screen-start");
+    setZipMood("wave");
+    say("start", "Pick a round — or tap Let’s Go!");
+  });
+  $("btn-mute").addEventListener("click", function () { setMuted(!state.muted); });
+  document.addEventListener("keydown", onKey);
+  document.addEventListener("pointerdown", function () { ensureAudio(); }, { once: true });
+
+  try {
+    if (localStorage.getItem("zapcity-muted") === "1") setMuted(true);
+  } catch (e) {}
+
+  var params = new URLSearchParams(window.location.search);
+  var shot = params.get("shot");
+  if (shot === "game") {
+    var round = parseInt(params.get("round") || "1", 10) - 1;
+    if (isNaN(round) || round < 0 || round >= ROUND_INFO.length) round = 0;
+    startRound(round);
+  } else if (shot === "end") {
+    state.zaps = 7;
+    state.hearts = 2;
+    state.roundIndex = 0;
+    endRound();
+  }
+}
+
+document.addEventListener("DOMContentLoaded", boot);
