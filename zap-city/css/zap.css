@@ -924,10 +924,10 @@ button, input, a { font: inherit; color: inherit; }
 
 .facts-key {
   margin: 6px 0 16px;
-  font-size: 1.35rem;
-  font-weight: 800;
-  color: #ffe14a;
-  letter-spacing: 0.04em;
+}
+button.fact-chip {
+  cursor: pointer;
+  font: inherit;
 }
 .fact-band h3 {
   text-transform: none;

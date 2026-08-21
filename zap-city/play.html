@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#090014" />
   <title>Zap City</title>
   <link rel="icon" href="assets/zip.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="css/zap.css?v=snd26" />
+  <link rel="stylesheet" href="css/zap.css?v=snd27" />
 </head>
 <body>
   <div id="sky" aria-hidden="true"></div>
@@ -66,9 +66,9 @@
       <button id="btn-picks" class="btn secondary huge" type="button" aria-label="Choose wave">Choose wave</button>
       <button id="btn-next" class="btn ghost" type="button" aria-label="Next wave" hidden>▶ Next</button>
       <p id="end-key" class="end-key">
-        <span class="fact-chip learning">practiced</span>
-        <span class="fact-chip mastered">★ mastered</span>
-        <span class="fact-chip struggle">needs practice</span>
+        <button type="button" class="fact-chip learning" data-open-facts>practiced</button>
+        <button type="button" class="fact-chip mastered" data-open-facts>★ mastered</button>
+        <button type="button" class="fact-chip struggle" data-open-facts>needs practice</button>
       </p>
       <div id="end-facts" class="fact-row" aria-label="Facts"></div>
       <button id="btn-facts-end" class="btn ghost" type="button" aria-label="Mastery">★ Mastery</button>
@@ -77,12 +77,16 @@
 
   <section id="screen-facts" class="screen" aria-label="Facts" hidden>
     <h2 class="title small">Mastery</h2>
-    <p id="facts-key" class="facts-key">★ = mastered</p>
+    <p id="facts-key" class="end-key facts-key">
+        <span class="fact-chip learning">practiced</span>
+        <span class="fact-chip mastered">★ mastered</span>
+        <span class="fact-chip struggle">needs practice</span>
+      </p>
     <div id="facts-bands" class="facts-bands"></div>
     <button id="btn-facts-back" class="btn primary huge" type="button" aria-label="Back">← Back</button>
   </section>
 
   <div id="confetti" aria-hidden="true"></div>
-  <script src="js/zap.js?v=snd26"></script>
+  <script src="js/zap.js?v=snd27"></script>
 </body>
 </html>

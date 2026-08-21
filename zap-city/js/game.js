@@ -937,8 +937,9 @@ function endRound() {
   paintEndFacts();
 }
 
-function factChip(prompt, status) {
-  var el = document.createElement("span");
+function factChip(prompt, status, asButton) {
+  var el = document.createElement(asButton ? "button" : "span");
+  if (asButton) el.type = "button";
   var cls = status === "struggle" ? "struggle" : status === "mastered" ? "mastered" : "learning";
   el.className = "fact-chip " + cls;
   el.textContent = (cls === "mastered" ? "★ " : cls === "struggle" ? "! " : "") + prompt;
@@ -952,7 +953,9 @@ function paintEndFacts() {
   var map = loadFacts();
   (state.waveFacts || []).forEach(function (k) {
     var row = map[k];
-    box.appendChild(factChip(k, factStatus(row)));
+    var chip = factChip(k, factStatus(row), true);
+    chip.addEventListener("click", function () { openFacts("screen-end"); });
+    box.appendChild(chip);
   });
 }
 
@@ -980,9 +983,10 @@ function paintFactBook() {
   });
 }
 
-function openFacts() {
+function openFacts(from) {
   stopFalling();
   paintFactBook();
+  state.factsFrom = from || "screen-start";
   showScreen("screen-facts");
 }
 
@@ -1081,11 +1085,14 @@ function boot() {
     showScreen("screen-start");
   });
   $("btn-mute").addEventListener("click", function () { setMuted(!state.muted); });
-  if ($("btn-facts")) $("btn-facts").addEventListener("click", openFacts);
-  if ($("btn-facts-end")) $("btn-facts-end").addEventListener("click", openFacts);
+  if ($("btn-facts")) $("btn-facts").addEventListener("click", function () { openFacts("screen-start"); });
+  if ($("btn-facts-end")) $("btn-facts-end").addEventListener("click", function () { openFacts("screen-end"); });
   if ($("btn-facts-back")) $("btn-facts-back").addEventListener("click", function () {
-    showScreen("screen-start");
+    showScreen(state.factsFrom || "screen-start");
     say("start", "");
+  });
+  if ($("end-key")) $("end-key").addEventListener("click", function (e) {
+    if (e.target.closest("[data-open-facts], .fact-chip")) openFacts("screen-end");
   });
   document.addEventListener("keydown", onKey);
   document.addEventListener("pointerdown", function (e) {
