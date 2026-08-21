@@ -10,9 +10,9 @@
 // ========== TWEAK THESE ==========
 var QUESTIONS_PER_ROUND = 8;
 var STARTING_HEARTS = 3;
-var FALL_MS = 3800;         // default fall
-var SLOW_FALL_MS = 4600;    // round 1
-var SPEED_FALL_MS = 2600;   // speed wave
+var FALL_MS = 3000;         // default fall
+var SLOW_FALL_MS = 3600;    // round 1
+var SPEED_FALL_MS = 2000;   // speed wave
 var LASER_TRAVEL_MS = 560;  // beam climbs from the nearest tower
 var POP_MS = 340;           // problem burst after the beam arrives
 var WRONG_CLEAR_MS = 300;   // shake, then clear typed digits
@@ -148,17 +148,20 @@ function beep(freq, dur, type, when, vol) {
 }
 
 function playZap() {
-  beep(440, 0.07, "square", 0, 0.09);
-  beep(784, 0.09, "square", 0.06, 0.11);
-  beep(1174, 0.14, "triangle", 0.13, 0.12);
+  beep(220, 0.06, "sawtooth", 0, 0.2);
+  beep(440, 0.1, "square", 0, 0.28);
+  beep(880, 0.12, "square", 0.05, 0.32);
+  beep(1320, 0.18, "triangle", 0.1, 0.34);
 }
 function playWrong() {
-  beep(196, 0.16, "sine", 0, 0.08);
-  beep(165, 0.18, "sine", 0.1, 0.07);
+  beep(196, 0.16, "sine", 0, 0.1);
+  beep(165, 0.18, "sine", 0.1, 0.08);
 }
 function playHit() {
-  beep(180, 0.2, "sine", 0, 0.07);
-  beep(140, 0.24, "sine", 0.12, 0.06);
+  beep(70, 0.32, "sawtooth", 0, 0.26);
+  beep(120, 0.22, "square", 0, 0.22);
+  beep(48, 0.4, "sine", 0.05, 0.24);
+  beep(200, 0.12, "triangle", 0.08, 0.14);
 }
 
 function setMuted(on) {
@@ -533,6 +536,26 @@ function zapCorrect() {
   window.setTimeout(advance, travel + POP_MS + NEXT_PAUSE_MS);
 }
 
+
+function boomBits(building) {
+  var field = $("playfield");
+  if (!field || !building) return;
+  var r = building.getBoundingClientRect();
+  var f = field.getBoundingClientRect();
+  var colors = ["#ffe14a", "#ff6b5a", "#fff", "#ff3d8a", "#2ef5ff"];
+  for (var i = 0; i < 12; i++) {
+    var el = document.createElement("div");
+    el.className = "boom-bit";
+    el.style.left = (r.left + r.width / 2 - f.left) + "px";
+    el.style.top = (r.top + 8 - f.top) + "px";
+    el.style.background = colors[i % colors.length];
+    el.style.setProperty("--dx", rand(-56, 56) + "px");
+    el.style.setProperty("--dy", rand(-78, -8) + "px");
+    field.appendChild(el);
+    window.setTimeout(function (n) { return function () { n.remove(); }; }(el), 720);
+  }
+}
+
 function onCityHit() {
   if (state.locked) return;
   state.locked = true;
@@ -550,12 +573,13 @@ function onCityHit() {
     doomed.classList.remove("explode");
     void doomed.offsetWidth;
     doomed.classList.add("explode");
+    boomBits(doomed);
     window.setTimeout(function (b) {
       return function () {
         b.classList.remove("explode", "firing");
         b.classList.add("wrecked");
       };
-    }(doomed), 520);
+    }(doomed), 720);
   }
   if (state.hearts > 0) state.hearts -= 1;
   state.results.push("miss");
